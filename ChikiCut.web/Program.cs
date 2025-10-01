@@ -101,6 +101,13 @@ var app = builder.Build();
 
 Console.WriteLine("=== App construida correctamente ===");
 
+// Ejecutar migraciones automáticas en producción
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
 // Middleware de diagnóstico para logging de requests y responses
 app.Use(async (context, next) =>
 {
