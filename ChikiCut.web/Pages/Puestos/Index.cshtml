@@ -1,0 +1,224 @@
+@page
+@model ChikiCut.web.Pages.Puestos.IndexModel
+@{
+    ViewData["Title"] = "Puestos";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1><i class="bi bi-person-workspace me-2"></i>Gestión de Puestos</h1>
+            <p class="text-muted mb-0">Administra los puestos de trabajo del sistema</p>
+        </div>
+        <div class="col-auto">
+            <a asp-page="Create" class="btn btn-success">
+                <i class="bi bi-plus-circle me-1"></i>Nuevo Puesto
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Filtros -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="btn-group" role="group">
+            <input type="radio" class="btn-check" name="filtroEstado" id="filtroTodos" value="todos" checked>
+            <label class="btn btn-outline-secondary" for="filtroTodos">
+                <i class="bi bi-list me-1"></i>Todos (@Model.TotalPuestos)
+            </label>
+            
+            <input type="radio" class="btn-check" name="filtroEstado" id="filtroActivos" value="activos">
+            <label class="btn btn-outline-success" for="filtroActivos">
+                <i class="bi bi-check-circle me-1"></i>Activos (@Model.PuestosActivos)
+            </label>
+            
+            <input type="radio" class="btn-check" name="filtroEstado" id="filtroInactivos" value="inactivos">
+            <label class="btn btn-outline-danger" for="filtroInactivos">
+                <i class="bi bi-x-circle me-1"></i>Inactivos (@(Model.TotalPuestos - Model.PuestosActivos))
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas rápidas -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-person-workspace display-4"></i>
+                <h3 class="mt-2">@Model.TotalPuestos</h3>
+                <p class="mb-0">Total Puestos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-check-circle display-4"></i>
+                <h3 class="mt-2">@Model.PuestosActivos</h3>
+                <p class="mb-0">Puestos Activos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-people display-4"></i>
+                <h3 class="mt-2">@Model.Puestos.Sum(p => p.Empleados.Count)</h3>
+                <p class="mb-0">Empleados Asignados</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-graph-up display-4"></i>
+                <h3 class="mt-2">@Model.Puestos.Count(p => p.NivelJerarquico == 4)</h3>
+                <p class="mb-0">Nivel Gerencial</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-list-ul me-2"></i><strong>Lista de Puestos</strong>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Puesto</th>
+                        <th>Nivel Jerárquico</th>
+                        <th class="d-none d-md-table-cell">Rango Salarial</th>
+                        <th class="d-none d-lg-table-cell">Empleados</th>
+                        <th class="d-none d-lg-table-cell">Requiere Experiencia</th>
+                        <th>Estado</th>
+                        <th width="150px">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var puesto in Model.Puestos)
+                    {
+                        <tr data-puesto="@puesto.Id" data-activo="@puesto.IsActive.ToString().ToLower()">
+                            <td>
+                                <div class="fw-bold">@puesto.Nombre</div>
+                                @if (!string.IsNullOrEmpty(puesto.Descripcion))
+                                {
+                                    <small class="text-muted">@puesto.Descripcion</small>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge @(puesto.NivelJerarquico switch 
+                                {
+                                    1 => "bg-secondary",
+                                    2 => "bg-primary", 
+                                    3 => "bg-info",
+                                    4 => "bg-warning",
+                                    _ => "bg-dark"
+                                })">
+                                    @puesto.NivelDescripcion
+                                </span>
+                            </td>
+                            <td class="d-none d-md-table-cell">
+                                <small>@puesto.RangoSalarial</small>
+                            </td>
+                            <td class="d-none d-lg-table-cell">
+                                <span class="badge bg-info">@puesto.Empleados.Count</span>
+                            </td>
+                            <td class="d-none d-lg-table-cell">
+                                @if (puesto.RequiereExperiencia)
+                                {
+                                    <i class="bi bi-check-circle text-success" title="Requiere experiencia"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-x-circle text-muted" title="No requiere experiencia"></i>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge @(puesto.IsActive ? "bg-success" : "bg-danger")">
+                                    @(puesto.IsActive ? "Activo" : "Inactivo")
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a asp-page="Details" asp-route-id="@puesto.Id" 
+                                       class="btn btn-sm btn-outline-info" title="Ver detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-page="Edit" asp-route-id="@puesto.Id" 
+                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-page="Delete" asp-route-id="@puesto.Id" 
+                                       class="btn btn-sm @(puesto.IsActive ? "btn-outline-warning" : "btn-outline-success")" 
+                                       title="@(puesto.IsActive ? "Desactivar puesto" : "Reactivar puesto")">
+                                        <i class="bi @(puesto.IsActive ? "bi-x-circle" : "bi-check-circle")"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Puestos.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <i class="bi bi-person-workspace display-4 text-muted d-block mb-3"></i>
+                                <h5 class="text-muted">No hay puestos registrados</h5>
+                                <p class="text-muted">Comienza agregando tu primer puesto</p>
+                                <a asp-page="Create" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-1"></i>Agregar Puesto
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Script para filtrar puestos por estado
+        document.addEventListener('DOMContentLoaded', function() {
+            const filtros = document.querySelectorAll('input[name="filtroEstado"]');
+            const filas = document.querySelectorAll('tbody tr[data-puesto]');
+
+            filtros.forEach(filtro => {
+                filtro.addEventListener('change', function() {
+                    const filtroSeleccionado = this.value;
+                    
+                    filas.forEach(fila => {
+                        const esActivo = fila.getAttribute('data-activo') === 'true';
+                        let mostrar = false;
+                        
+                        switch(filtroSeleccionado) {
+                            case 'todos':
+                                mostrar = true;
+                                break;
+                            case 'activos':
+                                mostrar = esActivo;
+                                break;
+                            case 'inactivos':
+                                mostrar = !esActivo;
+                                break;
+                        }
+                        
+                        fila.style.display = mostrar ? '' : 'none';
+                    });
+                });
+            });
+        });
+    </script>
+}

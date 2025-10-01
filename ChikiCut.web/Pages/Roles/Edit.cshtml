@@ -1,0 +1,743 @@
+@page
+@model ChikiCut.web.Pages.Roles.EditModel
+@{
+    ViewData["Title"] = "Editar Rol";
+}
+
+@section Styles {
+    <style>
+        @@keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .toast-container .toast {
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .toast.bg-success {
+            border-left: 4px solid #28a745;
+        }
+        
+        .toast.bg-danger {
+            border-left: 4px solid #dc3545;
+        }
+        
+        .toast.bg-warning {
+            border-left: 4px solid #ffc107;
+        }
+        
+        .toast.bg-info {
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .permission-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .permission-quick-actions .btn {
+            transition: all 0.2s ease;
+        }
+        
+        .permission-quick-actions .btn:hover {
+            transform: translateY(-1px);
+        }
+    </style>
+}
+
+<div class="page-header mb-4">
+    <h1><i class="bi bi-pencil me-2"></i>Editar Rol</h1>
+    <p class="text-muted">Modifica la configuración del rol: @Model.Rol.Nombre</p>
+</div>
+
+@if (Model.EsRolPropio)
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <strong>Atención:</strong> Estás editando tu propio rol. Algunas opciones están limitadas por seguridad.
+    </div>
+}
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="post">
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            <input type="hidden" asp-for="Rol.Id" />
+            <input type="hidden" asp-for="Rol.CreatedAt" />
+
+            <!-- Información básica del rol -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-info-circle me-2"></i><strong>Información Básica</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label asp-for="Rol.Nombre" class="form-label">Nombre del Rol *</label>
+                                <input asp-for="Rol.Nombre" class="form-control" />
+                                <span asp-validation-for="Rol.Nombre" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label asp-for="Rol.Descripcion" class="form-label">Descripción</label>
+                                <textarea asp-for="Rol.Descripcion" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Rol.Descripcion" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                @if (Model.EsRolPropio)
+                                {
+                                    <input asp-for="Rol.IsActive" class="form-check-input" disabled />
+                                    <input type="hidden" asp-for="Rol.IsActive" />
+                                    <label asp-for="Rol.IsActive" class="form-check-label">
+                                        Rol Activo
+                                    </label>
+                                    <div class="form-text text-warning">No puedes desactivar tu propio rol.</div>
+                                }
+                                else
+                                {
+                                    <input asp-for="Rol.IsActive" class="form-check-input" />
+                                    <label asp-for="Rol.IsActive" class="form-check-label">
+                                        Rol Activo
+                                    </label>
+                                    <div class="form-text">Los roles inactivos no se pueden asignar a usuarios.</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de permisos -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-gear me-2"></i><strong>Configuración de Permisos</strong>
+                </div>
+                <div class="card-body">
+                    @if (Model.EsRolPropio)
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Información:</strong> Puedes modificar los permisos de tu propio rol, pero ten cuidado de no restringir tu acceso.
+                        </div>
+                    }
+
+                    <!-- Sistema Simplificado de Configuración Rápida -->
+                    <div class="permission-quick-actions mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="bi bi-collection me-2"></i>Copiar de Roles Existentes</h6>
+                                <p class="small text-muted mb-2">Duplica permisos de roles ya creados en el sistema</p>
+                                <div class="mb-2">
+                                    <select class="form-select form-select-sm" id="roleSelector">
+                                        <option value="">Seleccionar rol...</option>
+                                        @foreach (var role in Model.AvailableRoles.Where(r => r.Id != Model.Rol.Id))
+                                        {
+                                            <option value="@role.Id">@role.Nombre</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="d-grid gap-1">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="applyRolePermissions()">
+                                        <i class="bi bi-copy me-1"></i>Copiar Permisos
+                                    </button>
+                                </div>
+                                <small class="text-muted mt-1 d-block"><i class="bi bi-lightbulb me-1"></i>Tip: Selecciona un rol y copia su configuración</small>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h6><i class="bi bi-lightning me-2"></i>Plantillas del Sistema</h6>
+                                <p class="small text-muted mb-2">Configuraciones predefinidas comunes</p>
+                                <div class="d-grid gap-1">
+                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="applyTemplate('admin_total')" title="Todos los permisos del sistema">
+                                        <i class="bi bi-shield-fill-check me-1"></i>Administrador Total
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info btn-sm" onclick="applyTemplate('solo_consulta')" title="Solo permisos de lectura">
+                                        <i class="bi bi-eye me-1"></i>Solo Consulta
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="selectNone()" title="Quitar todos los permisos">
+                                        <i class="bi bi-x-circle me-1"></i>Limpiar Todo
+                                    </button>
+                                </div>
+                                <small class="text-muted mt-1 d-block"><i class="bi bi-lightbulb me-1"></i>Tip: Aplica una base y personaliza después</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Acciones Globales Rápidas -->
+                    <div class="row mb-3 pt-3 border-top">
+                        <div class="col-md-12">
+                            <h6><i class="bi bi-toggles me-2"></i>Acciones Disponibles</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-success btn-sm" onclick="selectAll()" title="Marcar todos los permisos">
+                                    <i class="bi bi-check-all me-1"></i>Seleccionar Todo
+                                </button>
+                                <button type="button" class="btn btn-info btn-sm" onclick="selectReadOnly()" title="Solo permisos de lectura">
+                                    <i class="bi bi-eye me-1"></i>Solo Lectura
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="selectNone()" title="Quitar todos los permisos">
+                                    <i class="bi bi-x-circle me-1"></i>Limpiar Todo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones por Columna -->
+                    <div class="permission-column-actions mb-3">
+                        <div class="row text-center">
+                            <div class="col">
+                                <small class="text-muted">Módulo</small>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-link btn-sm p-0" onclick="toggleColumn('Read')" title="Alternar toda la columna Ver">
+                                    <i class="bi bi-eye"></i> Ver
+                                </button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-link btn-sm p-0" onclick="toggleColumn('Create')" title="Alternar toda la columna Crear">
+                                    <i class="bi bi-plus-circle"></i> Crear
+                                </button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-link btn-sm p-0" onclick="toggleColumn('Update')" title="Alternar toda la columna Editar">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-link btn-sm p-0" onclick="toggleColumn('Delete')" title="Alternar toda la columna Eliminar">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </div>
+                            <div class="col">
+                                <small class="text-muted">Acciones</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm permission-table">
+                            <thead>
+                                <tr>
+                                    <th>Módulo</th>
+                                    <th class="text-center">Ver</th>
+                                    <th class="text-center">Crear</th>
+                                    <th class="text-center">Editar</th>
+                                    <th class="text-center">Eliminar</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var modulo in new[] { 
+                                    new { Key = "admin", Name = "Administración", Icon = "bi-gear-fill" },
+                                    new { Key = "operaciones", Name = "Operaciones", Icon = "bi-briefcase-fill" },
+                                    new { Key = "usuarios", Name = "Usuarios", Icon = "bi-people" },
+                                    new { Key = "empleados", Name = "Empleados", Icon = "bi-person-badge" },
+                                    new { Key = "sucursales", Name = "Sucursales", Icon = "bi-building" },
+                                    new { Key = "puestos", Name = "Puestos", Icon = "bi-person-workspace" },
+                                    new { Key = "proveedores", Name = "Proveedores", Icon = "bi-truck" },
+                                    new { Key = "servicios", Name = "Servicios", Icon = "bi-scissors" },
+                                    new { Key = "productos", Name = "Productos", Icon = "bi-box-seam" },
+                                    new { Key = "clientes", Name = "Clientes", Icon = "bi-person-hearts" },
+                                    new { Key = "conceptosgasto", Name = "Conceptos de Gastos", Icon = "bi-cash-coin" },
+                                    new { Key = "roles", Name = "Roles", Icon = "bi-shield-check" },
+                                    new { Key = "reportes", Name = "Reportes", Icon = "bi-graph-up" }
+                                })
+                                {
+                                    <tr data-module="@modulo.Key">
+                                        <td>
+                                            <i class="@modulo.Icon me-2"></i>@modulo.Name
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="checkbox" class="form-check-input permission-checkbox" 
+                                                   name="Permisos[@modulo.Key].Read" value="true" 
+                                                   checked="@(Model.Permisos.ContainsKey(modulo.Key) && Model.Permisos[modulo.Key].Read)" data-action="Read" />
+                                            <input type="hidden" name="Permisos[@modulo.Key].Read" value="false" />
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="checkbox" class="form-check-input permission-checkbox" 
+                                                   name="Permisos[@modulo.Key].Create" value="true" 
+                                                   checked="@(Model.Permisos.ContainsKey(modulo.Key) && Model.Permisos[modulo.Key].Create)" data-action="Create" />
+                                            <input type="hidden" name="Permisos[@modulo.Key].Create" value="false" />
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="checkbox" class="form-check-input permission-checkbox" 
+                                                   name="Permisos[@modulo.Key].Update" value="true" 
+                                                   checked="@(Model.Permisos.ContainsKey(modulo.Key) && Model.Permisos[modulo.Key].Update)" data-action="Update" />
+                                            <input type="hidden" name="Permisos[@modulo.Key].Update" value="false" />
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="checkbox" class="form-check-input permission-checkbox" 
+                                                   name="Permisos[@modulo.Key].Delete" value="true" 
+                                                   checked="@(Model.Permisos.ContainsKey(modulo.Key) && Model.Permisos[modulo.Key].Delete)" data-action="Delete" />
+                                            <input type="hidden" name="Permisos[@modulo.Key].Delete" value="false" />
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-outline-success btn-sm" onclick="setRowPermissions('@modulo.Key', true)" title="Marcar toda la fila">
+                                                    <i class="bi bi-check-all"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setRowReadOnly('@modulo.Key')" title="Solo lectura">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="setRowPermissions('@modulo.Key', false)" title="Limpiar fila">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Indicadores de cambios -->
+                    <div class="permission-status mt-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center mb-3">
+                                    <span class="badge bg-secondary me-2" id="permission-count">0 permisos activos</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i>Guardar Cambios
+                </button>
+                <a asp-page="Details" asp-route-id="@Model.Rol.Id" class="btn btn-info">
+                    <i class="bi bi-eye me-1"></i>Ver Detalles
+                </a>
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Panel de información -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Información del Rol</strong>
+            </div>
+            <div class="card-body">
+                <dl class="row small">
+                    <dt class="col-sm-5">Nombre:</dt>
+                    <dd class="col-sm-7">@Model.Rol.Nombre</dd>
+                    <dt class="col-sm-5">Creado:</dt>
+                    <dd class="col-sm-7">@Model.Rol.CreatedAt.ToString("dd/MM/yyyy")</dd>
+                    @if (Model.Rol.UpdatedAt.HasValue)
+                    {
+                        <dt class="col-sm-5">Modificado:</dt>
+                        <dd class="col-sm-7">@Model.Rol.UpdatedAt.Value.ToString("dd/MM/yyyy")</dd>
+                    }
+                    <dt class="col-sm-5">Estado:</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.Rol.IsActive)
+                        {
+                            <span class="badge bg-success">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactivo</span>
+                        }
+                    </dd>
+                    <dt class="col-sm-5">Usuarios:</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.UsuariosAsignados > 0)
+                        {
+                            <span class="badge bg-primary">@Model.UsuariosAsignados asignado(s)</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin usuarios</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        @if (Model.UsuariosAsignados > 0)
+        {
+            <div class="card mt-3">
+                <div class="card-header">
+                    <i class="bi bi-exclamation-triangle me-2"></i><strong>Advertencia</strong>
+                </div>
+                <div class="card-body">
+                    <p class="small text-warning">
+                        Este rol tiene <strong>@Model.UsuariosAsignados usuario(s)</strong> asignado(s). 
+                        Los cambios en permisos afectarán inmediatamente a estos usuarios.
+                    </p>
+                </div>
+            </div>
+        }
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-lightbulb me-2"></i><strong>Opciones Disponibles</strong>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-primary"><i class="bi bi-clipboard me-1"></i>Copiar de Roles</h6>
+                    <p class="small">Usa los permisos de un rol existente como punto de partida.</p>
+                </div>
+                <div class="mb-3">
+                    <h6 class="text-success"><i class="bi bi-lightning me-1"></i>Plantillas del Sistema</h6>
+                    <p class="small">Configuraciones predefinidas: Admin Total y Solo Consulta.</p>
+                </div>
+                <div class="mb-0">
+                    <h6 class="text-info"><i class="bi bi-toggles me-1"></i>Acciones Rápidas</h6>
+                    <p class="small">Seleccionar todo, solo lectura o limpiar permisos.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-shield-exclamation me-2"></i><strong>Recomendaciones</strong>
+            </div>
+            <div class="card-body">
+                <ul class="small">
+                    <li>Verifica los permisos antes de guardar los cambios</li>
+                    <li>Comunica los cambios a los usuarios afectados</li>
+                    <li>Mantén documentación de los cambios importantes</li>
+                    <li>Considera usar roles existentes como base</li>
+                    @if (Model.EsRolPropio)
+                    {
+                        <li class="text-warning"><strong>Ten cuidado de no quitarte permisos críticos</strong></li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-question-circle me-2"></i><strong>¿Cuál opción usar?</strong>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-primary"><i class="bi bi-clipboard me-1"></i>Usar "Copiar de Roles" cuando:</h6>
+                    <ul class="small">
+                        <li>Hay un rol similar en el sistema actual</li>
+                        <li>Quieres crear una variación (ej: "Gerente Nocturno" basado en "Gerente")</li>
+                        <li>Necesitas mantener consistencia entre roles</li>
+                    </ul>
+                </div>
+                <div class="mb-0">
+                    <h6 class="text-info"><i class="bi bi-lightning me-1"></i>Usar "Plantillas del Sistema" cuando:</h6>
+                    <ul class="small">
+                        <li>Estás empezando desde cero</li>
+                        <li>Quieres una base estándar para personalizar</li>
+                        <li>No hay roles similares que copiar</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Guardar como Plantilla -->
+<div class="modal fade" id="saveTemplateModal" tabindex="-1" aria-labelledby="saveTemplateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="saveTemplateModalLabel">
+                    <i class="bi bi-save me-2"></i>Guardar como Plantilla
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="saveTemplateForm">
+                    <div class="mb-3">
+                        <label for="templateName" class="form-label">Nombre de la plantilla *</label>
+                        <input type="text" class="form-control" id="templateName" required maxlength="100" placeholder="Ej: Mi Plantilla Personalizada">
+                    </div>
+                    <div class="mb-3">
+                        <label for="templateDescription" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="templateDescription" rows="3" maxlength="500" placeholder="Describe para qué sirve esta plantilla..."></textarea>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="templateFavorite">
+                        <label class="form-check-label" for="templateFavorite">
+                            <i class="bi bi-star me-1"></i>Marcar como favorita
+                        </label>
+                    </div>
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Vista previa:</strong>
+                        <div id="templatePreview" class="mt-2"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="saveNewTemplate()">
+                    <i class="bi bi-save me-1"></i>Guardar Plantilla
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Vista Previa de Rol -->
+<div class="modal fade" id="rolePreviewModal" tabindex="-1" aria-labelledby="rolePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rolePreviewModalLabel">
+                    <i class="bi bi-eye me-2"></i>Vista Previa de Permisos
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Atención:</strong> Esta es una vista previa de los permisos. No se han guardado cambios aún.
+                </div>
+                <div id="previewContent" class="mb-3"></div>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="applyPreviewChanges()">
+                    <i class="bi bi-check-circle me-1"></i>Aplicar Cambios en Rol
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // === SISTEMA SIMPLIFICADO DE PERMISOS ===
+        
+        // Función principal de aplicar permisos
+        function applyPermissionTemplate(permissions) {
+            try {
+                if (typeof permissions === 'string') {
+                    permissions = JSON.parse(permissions);
+                }
+                
+                // Limpiar todos los checkboxes
+                document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
+                // Aplicar permisos por módulo
+                Object.keys(permissions).forEach(moduleKey => {
+                    const modulePerms = permissions[moduleKey];
+                    
+                    if (modulePerms && typeof modulePerms === 'object') {
+                        ['Read', 'Create', 'Update', 'Delete', 'read', 'create', 'update', 'delete'].forEach(action => {
+                            if (modulePerms[action] === true) {
+                                const normalizedAction = action.charAt(0).toUpperCase() + action.slice(1).toLowerCase();
+                                const checkbox = document.querySelector(`input[name="Permisos[${moduleKey}].${normalizedAction}"][type="checkbox"]`);
+                                
+                                if (checkbox) {
+                                    checkbox.checked = true;
+                                }
+                            }
+                        });
+                    }
+                });
+                
+                updatePermissionCount();
+                
+            } catch (error) {
+                console.error('Error applying template:', error);
+                alert('Error al aplicar permisos: ' + error.message);
+            }
+        }
+
+        // Aplicar permisos de rol existente
+        async function applyRolePermissions() {
+            const roleSelector = document.getElementById('roleSelector');
+            const roleId = roleSelector.value;
+            
+            if (!roleId) {
+                alert('Selecciona un rol primero');
+                return;
+            }
+
+            try {
+                const response = await fetch(`?handler=RolePermissions&roleId=${roleId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const permissions = JSON.parse(data.permissions || '{}');
+                    applyPermissionTemplate(permissions);
+                } else {
+                    alert('Error al aplicar permisos del rol');
+                }
+            } catch (error) {
+                console.error('Error applying role permissions:', error);
+                alert('Error al aplicar permisos del rol');
+            }
+        }
+
+        // Aplicar plantillas predefinidas del sistema
+        function applyTemplate(templateType) {
+            let permissions = {};
+            
+            switch (templateType) {
+                case 'admin_total':
+                    permissions = {
+                        usuarios: { Read: true, Create: true, Update: true, Delete: true },
+                        empleados: { Read: true, Create: true, Update: true, Delete: true },
+                        sucursales: { Read: true, Create: true, Update: true, Delete: true },
+                        puestos: { Read: true, Create: true, Update: true, Delete: true },
+                        proveedores: { Read: true, Create: true, Update: true, Delete: true },
+                        servicios: { Read: true, Create: true, Update: true, Delete: true },
+                        productos: { Read: true, Create: true, Update: true, Delete: true },
+                        clientes: { Read: true, Create: true, Update: true, Delete: true },
+                        conceptosgasto: { Read: true, Create: true, Update: true, Delete: true },
+                        roles: { Read: true, Create: true, Update: true, Delete: true },
+                        reportes: { Read: true, Create: true, Update: true, Delete: true }
+                    };
+                    break;
+                    
+                case 'solo_consulta':
+                    permissions = {
+                        usuarios: { Read: true, Create: false, Update: false, Delete: false },
+                        empleados: { Read: true, Create: false, Update: false, Delete: false },
+                        sucursales: { Read: true, Create: false, Update: false, Delete: false },
+                        puestos: { Read: true, Create: false, Update: false, Delete: false },
+                        proveedores: { Read: true, Create: false, Update: false, Delete: false },
+                        servicios: { Read: true, Create: false, Update: false, Delete: false },
+                        productos: { Read: true, Create: false, Update: false, Delete: false },
+                        clientes: { Read: true, Create: false, Update: false, Delete: false },
+                        conceptosgasto: { Read: true, Create: false, Update: false, Delete: false },
+                        roles: { Read: true, Create: false, Update: false, Delete: false },
+                        reportes: { Read: true, Create: false, Update: false, Delete: false }
+                    };
+                    break;
+                    
+                default:
+                    alert('Plantilla no reconocida');
+                    return;
+            }
+            
+            try {
+                applyPermissionTemplate(permissions);
+            } catch (error) {
+                console.error('Error applying system template:', error);
+                alert('Error al aplicar la plantilla del sistema');
+            }
+        }
+
+        // Seleccionar todos los permisos
+        function selectAll() {
+            document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            updatePermissionCount();
+        }
+
+        // Deseleccionar todos los permisos
+        function selectNone() {
+            document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updatePermissionCount();
+        }
+
+        // Solo permisos de lectura
+        function selectReadOnly() {
+            document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+                const isReadPermission = checkbox.getAttribute('data-action') === 'Read' || 
+                                        checkbox.name.includes('.Read');
+                checkbox.checked = isReadPermission;
+            });
+            updatePermissionCount();
+        }
+
+        // Configurar permisos de fila
+        function setRowPermissions(moduleKey, enable) {
+            const actions = ['Read', 'Create', 'Update', 'Delete'];
+            actions.forEach(action => {
+                const checkbox = document.querySelector(`input[name="Permisos[${moduleKey}].${action}"]:not([type="hidden"])`);
+                if (checkbox) {
+                    checkbox.checked = enable;
+                }
+            });
+            updatePermissionCount();
+        }
+
+        // Solo lectura para una fila
+        function setRowReadOnly(moduleKey) {
+            const actions = ['Read', 'Create', 'Update', 'Delete'];
+            actions.forEach(action => {
+                const checkbox = document.querySelector(`input[name="Permisos[${moduleKey}].${action}"]:not([type="hidden"])`);
+                if (checkbox) {
+                    checkbox.checked = action === 'Read';
+                }
+            });
+            updatePermissionCount();
+        }
+
+        // Alternar columna completa
+        function toggleColumn(action) {
+            const checkboxes = document.querySelectorAll(`input[name*=".${action}"]:not([type="hidden"])`);
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const shouldCheck = checkedCount < checkboxes.length / 2;
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = shouldCheck;
+            });
+            
+            updatePermissionCount();
+        }
+
+        // Actualizar contador de permisos
+        function updatePermissionCount() {
+            const checkedCount = document.querySelectorAll('.permission-checkbox:checked').length;
+            const countElement = document.getElementById('permission-count');
+            if (countElement) {
+                countElement.textContent = `${checkedCount} permisos activos`;
+            }
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePermissionCount();
+            
+            document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updatePermissionCount);
+            });
+        });
+    </script>
+}
+
+<!-- Modal: Explorar Plantillas -->
+<div class="modal fade" id="templatesModal" tabindex="-1" aria-labelledby="templatesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="templatesModalLabel">
+                    <i class="bi bi-collection me-2"></i>Explorar Todas las Plantillas
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="templatesModalBody">
+                    <!-- Se carga dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

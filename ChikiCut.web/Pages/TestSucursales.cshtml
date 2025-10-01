@@ -1,0 +1,157 @@
+@page
+@model ChikiCut.web.Pages.TestSucursalesModel
+@{
+    ViewData["Title"] = "Prueba de Sucursales";
+}
+
+<div class="container mt-4">
+    <h1><i class="bi bi-gear me-2"></i>Prueba del Sistema de Sucursales</h1>
+    <p class="text-muted">Verificación de que el sistema de asignación de sucursales funciona correctamente</p>
+
+    <!-- Resultados del servicio -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-check-circle me-2"></i><strong>Resultados del Servicio SucursalFilterService</strong>
+        </div>
+        <div class="card-body">
+            @if (Model.Resultados.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>IDs Sucursales</th>
+                                <th>Nombres Sucursales</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var resultado in Model.Resultados)
+                            {
+                                <tr>
+                                    <td><strong>@resultado.Usuario</strong></td>
+                                    <td>[@string.Join(", ", resultado.SucursalesIds)]</td>
+                                    <td>
+                                        @foreach (var nombre in resultado.SucursalesNombres)
+                                        {
+                                            <span class="badge bg-primary me-1">@nombre</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    No se encontraron resultados. Verifica que la migración se ejecutó correctamente.
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Todos los usuarios con sus asignaciones -->
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-people me-2"></i><strong>Todos los Usuarios y sus Sucursales</strong>
+        </div>
+        <div class="card-body">
+            @if (Model.UsuariosInfo.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Código Usuario</th>
+                                <th>Email</th>
+                                <th>Sucursal del Empleado</th>
+                                <th>Sucursales Asignadas</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model.UsuariosInfo)
+                            {
+                                <tr>
+                                    <td><strong>@user.CodigoUsuario</strong></td>
+                                    <td>@user.Email</td>
+                                    <td>
+                                        <span class="badge bg-info">@user.SucursalEmpleado</span>
+                                    </td>
+                                    <td>
+                                        @if (user.SucursalesAsignadas.Any())
+                                        {
+                                            @foreach (var sucursal in user.SucursalesAsignadas)
+                                            {
+                                                <span class="badge bg-success me-1">@sucursal</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Sin asignaciones</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (user.SucursalesAsignadas.Any())
+                                        {
+                                            <i class="bi bi-check-circle text-success"></i>
+                                            <span class="text-success">OK</span>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-exclamation-triangle text-warning"></i>
+                                            <span class="text-warning">Sin asignar</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    <i class="bi bi-x-circle me-2"></i>
+                    No se encontraron usuarios en el sistema.
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Instrucciones -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <i class="bi bi-info-circle me-2"></i><strong>¿Qué significa esto?</strong>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6><span class="badge bg-success">? Todo OK</span></h6>
+                    <ul class="small">
+                        <li>Los usuarios tienen sucursales asignadas</li>
+                        <li>El servicio SucursalFilterService funciona</li>
+                        <li>Puedes aplicar filtros por sucursal</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6><span class="badge bg-warning">?? Sin asignar</span></h6>
+                    <ul class="small">
+                        <li>El usuario no tiene sucursales en usuario_sucursal</li>
+                        <li>Puede que la migración no funcionó para este usuario</li>
+                        <li>O el empleado no tiene sucursal asignada</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="/" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver al Inicio
+        </a>
+    </div>
+</div>

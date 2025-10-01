@@ -1,0 +1,744 @@
+@page
+@model ChikiCut.web.Pages.Productos.DetailsModel
+@{
+    ViewData["Title"] = "Detalles del Producto";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1><i class="bi bi-eye me-2"></i>Detalles del Producto</h1>
+            <p class="text-muted">@Model.Producto.NombreCompleto</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" role="group">
+                <a asp-page="Edit" asp-route-id="@Model.Producto.Id" class="btn btn-primary">
+                    <i class="bi bi-pencil me-1"></i>Editar
+                </a>
+                <a asp-page="Asignar" asp-route-id="@Model.Producto.Id" class="btn btn-success">
+                    <i class="bi bi-building me-1"></i>Asignar Sucursales
+                </a>
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Información principal del producto -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Información del Producto</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        @if (!string.IsNullOrEmpty(Model.Producto.ImagenPrincipalUrl))
+                        {
+                            <img src="@Model.Producto.ImagenPrincipalUrl" alt="@Model.Producto.Nombre" 
+                                 class="img-fluid rounded mb-3" style="max-height: 200px; width: 100%; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" 
+                                 style="height: 200px;">
+                                <i class="bi bi-box display-1 text-muted"></i>
+                            </div>
+                        }
+                    </div>
+                    <div class="col-md-8">
+                        <dl class="row">
+                            <dt class="col-sm-4">Código:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-secondary">@Model.Producto.Codigo</span>
+                                @if (!string.IsNullOrEmpty(Model.Producto.Sku))
+                                {
+                                    <br><small class="text-muted">SKU: @Model.Producto.Sku</small>
+                                }
+                            </dd>
+                            <dt class="col-sm-4">Nombre:</dt>
+                            <dd class="col-sm-8"><strong>@Model.Producto.Nombre</strong></dd>
+                            <dt class="col-sm-4">Marca:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-info">@Model.Producto.Marca</span>
+                            </dd>
+                            <dt class="col-sm-4">Categoría:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-primary">@Model.Producto.Categoria</span>
+                                @if (!string.IsNullOrEmpty(Model.Producto.Subcategoria))
+                                {
+                                    <br><small class="text-muted">@Model.Producto.Subcategoria</small>
+                                }
+                            </dd>
+                            <dt class="col-sm-4">Estado:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge @(Model.Producto.IsActive ? "bg-success" : "bg-danger")">
+                                    @Model.Producto.EstadoDescripcion
+                                </span>
+                                @if (Model.Producto.EsDestacado)
+                                {
+                                    <span class="badge bg-warning ms-1">
+                                        <i class="bi bi-star-fill me-1"></i>Destacado
+                                    </span>
+                                }
+                                @if (Model.Producto.EsNovedad)
+                                {
+                                    <span class="badge bg-info ms-1">NUEVO</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(Model.Producto.Descripcion))
+                {
+                    <hr>
+                    <h6><i class="bi bi-file-text me-1"></i>Descripción:</h6>
+                    <p class="text-muted">@Model.Producto.Descripcion</p>
+                }
+
+                @if (Model.Producto.TagsList.Any())
+                {
+                    <hr>
+                    <h6><i class="bi bi-tags me-1"></i>Etiquetas:</h6>
+                    @foreach (var tag in Model.Producto.TagsList)
+                    {
+                        <span class="badge bg-light text-dark me-1">#@tag</span>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- Información de precios y costos -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-currency-dollar me-2"></i><strong>Precios y Costos</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-6">Precio Base:</dt>
+                            <dd class="col-sm-6"><strong>@Model.Producto.PrecioFormateado</strong></dd>
+                            @if (Model.Producto.CostoPromedio.HasValue)
+                            {
+                                <dt class="col-sm-6">Costo Promedio:</dt>
+                                <dd class="col-sm-6">@Model.Producto.CostoPromedio.Value.ToString("C")</dd>
+                            }
+                            <dt class="col-sm-6">Margen Sugerido:</dt>
+                            <dd class="col-sm-6">@Model.Producto.MargenGananciaSugerido%</dd>
+                            <dt class="col-sm-6">Comisión Venta:</dt>
+                            <dd class="col-sm-6">@Model.Producto.ComisionVenta%</dd>
+                            <dt class="col-sm-6">Descuento Máximo:</dt>
+                            <dd class="col-sm-6">@Model.Producto.DescuentoMaximo%</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-6">Contenido:</dt>
+                            <dd class="col-sm-6">@Model.Producto.ContenidoFormateado</dd>
+                            <dt class="col-sm-6">Tipo:</dt>
+                            <dd class="col-sm-6">@Model.Producto.TipoProducto</dd>
+                            @if (Model.Producto.PesoGramos.HasValue)
+                            {
+                                <dt class="col-sm-6">Peso:</dt>
+                                <dd class="col-sm-6">@Model.Producto.PesoGramos g</dd>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Producto.DimensionesCm))
+                            {
+                                <dt class="col-sm-6">Dimensiones:</dt>
+                                <dd class="col-sm-6">@Model.Producto.DimensionesCm cm</dd>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Producto.Color))
+                            {
+                                <dt class="col-sm-6">Color:</dt>
+                                <dd class="col-sm-6">@Model.Producto.Color</dd>
+                            }
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Características especiales -->
+        @if (Model.Producto.EsPerecedero || Model.Producto.EsControlado || Model.Producto.RequiereInventario)
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-star me-2"></i><strong>Características Especiales</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @if (Model.Producto.RequiereInventario)
+                        {
+                            <div class="col-md-6">
+                                <h6><i class="bi bi-boxes me-1"></i>Control de Inventario</h6>
+                                <ul class="list-unstyled small">
+                                    <li><strong>Stock Mínimo:</strong> @Model.Producto.StockMinimo</li>
+                                    <li><strong>Stock Máximo:</strong> @Model.Producto.StockMaximo</li>
+                                    <li><strong>Punto de Reorden:</strong> @Model.Producto.PuntoReorden</li>
+                                </ul>
+                            </div>
+                        }
+                        @if (Model.Producto.EsPerecedero)
+                        {
+                            <div class="col-md-6">
+                                <h6><i class="bi bi-clock me-1"></i>Producto Perecedero</h6>
+                                <ul class="list-unstyled small">
+                                    <li><strong>Vida Útil:</strong> @Model.Producto.VidaUtilDias días</li>
+                                    <li><strong>Temperatura:</strong> @Model.Producto.TemperaturaAlmacenamiento</li>
+                                </ul>
+                            </div>
+                        }
+                    </div>
+                    @if (Model.Producto.EsControlado)
+                    {
+                        <div class="alert alert-warning mt-2">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Producto Controlado:</strong> Requiere permisos especiales para su venta.
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Sucursales asignadas -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-building me-2"></i><strong>Sucursales Asignadas (@Model.SucursalesAsignadas.Count)</strong>
+            </div>
+            <div class="card-body">
+                @if (Model.SucursalesAsignadas.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Sucursal</th>
+                                    <th>Precio Venta</th>
+                                    @if (Model.Producto.RequiereInventario)
+                                    {
+                                        <th>Stock</th>
+                                        <th>Estado Stock</th>
+                                    }
+                                    <th>Disponible</th>
+                                    <th>Destacado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var ps in Model.SucursalesAsignadas.OrderBy(s => s.Sucursal.Name))
+                                {
+                                    <tr>
+                                        <td><strong>@ps.Sucursal.Name</strong></td>
+                                        <td>
+                                            <strong>@ps.PrecioVenta.ToString("C")</strong>
+                                            @if (ps.PrecioVenta != Model.Producto.PrecioBase)
+                                            {
+                                                var diferencia = ((ps.PrecioVenta - Model.Producto.PrecioBase) / Model.Producto.PrecioBase * 100);
+                                                <br><small class="@(diferencia > 0 ? "text-success" : "text-danger")">
+                                                    @diferencia.ToString("+0.0;-0.0")% vs base
+                                                </small>
+                                            }
+                                            @if (ps.EnPromocion)
+                                            {
+                                                <br><span class="badge bg-warning">EN PROMOCIÓN</span>
+                                                @if (ps.PrecioPromocion.HasValue)
+                                                {
+                                                    <br><small class="text-success">@ps.PrecioPromocion.Value.ToString("C")</small>
+                                                }
+                                            }
+                                        </td>
+                                        @if (Model.Producto.RequiereInventario)
+                                        {
+                                            <td>
+                                                <strong>@ps.StockActual</strong>
+                                                <br><small class="text-muted">
+                                                    Min: @(ps.StockMinimoLocal ?? Model.Producto.StockMinimo) | 
+                                                    Máx: @(ps.StockMaximoLocal ?? Model.Producto.StockMaximo)
+                                                </small>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var stockMinimo = ps.StockMinimoLocal ?? Model.Producto.StockMinimo;
+                                                    var requiereReorden = ps.StockActual <= stockMinimo;
+                                                }
+                                                <span class="badge @(requiereReorden ? "bg-warning" : ps.StockActual <= 0 ? "bg-danger" : "bg-success")">
+                                                    @(ps.StockActual <= 0 ? "Sin stock" : requiereReorden ? "Stock bajo" : "Normal")
+                                                </span>
+                                            </td>
+                                        }
+                                        <td>
+                                            <span class="badge @(ps.Disponible ? "bg-success" : "bg-secondary")">
+                                                @(ps.Disponible ? "Disponible" : "No disponible")
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (ps.EsDestacadoLocal)
+                                            {
+                                                <i class="bi bi-star-fill text-warning"></i>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="bi bi-building display-4 text-muted"></i>
+                        <h5 class="text-muted mt-2">Sin sucursales asignadas</h5>
+                        <p class="text-muted">Este producto no está disponible en ninguna sucursal</p>
+                        <a asp-page="Asignar" asp-route-id="@Model.Producto.Id" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i>Asignar a Sucursales
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Asignación rápida de sucursales -->
+        @if (Model.SucursalesDisponibles.Any())
+        {
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-plus-circle me-2"></i><strong>Asignar a Nuevas Sucursales</strong>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">
+                        Asigna este producto rápidamente a sucursales adicionales usando la configuración base.
+                    </p>
+                    
+                    <form id="asignacionRapidaForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="ProductoId" value="@Model.Producto.Id" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Sucursales Disponibles:</label>
+                            <div class="row">
+                                @foreach (var sucursal in Model.SucursalesDisponibles)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" 
+                                                   name="SucursalesSeleccionadas" value="@sucursal.Id" 
+                                                   id="sucursal_@sucursal.Id">
+                                            <label class="form-check-label" for="sucursal_@sucursal.Id">
+                                                @sucursal.Name
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Precio de Venta:</label>
+                                    <input type="number" class="form-control" name="PrecioVenta" 
+                                           value="@Model.Producto.PrecioBase" step="0.01" min="0">
+                                </div>
+                            </div>
+                            @if (Model.Producto.RequiereInventario)
+                            {
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Stock Inicial:</label>
+                                        <input type="number" class="form-control" name="StockInicial" 
+                                               value="10" min="0">
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-success" onclick="asignarSucursalesRapido()">
+                                <i class="bi bi-check-circle me-1"></i>Asignar Seleccionadas
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" onclick="seleccionarTodas()">
+                                <i class="bi bi-check-all me-1"></i>Seleccionar Todas
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="limpiarSeleccion()">
+                                <i class="bi bi-x-circle me-1"></i>Limpiar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Panel lateral -->
+    <div class="col-lg-4">
+        @if (Model.Producto.RequiereInventario && Model.SucursalesAsignadas.Any())
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <i class="bi bi-bar-chart me-2"></i><strong>Estadísticas de Inventario</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">@Model.StockTotal</h4>
+                            <small class="text-muted">Stock Total</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-warning">@Model.SucursalesStockBajo</h4>
+                            <small class="text-muted">Stock Bajo</small>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h6 class="text-success">@Model.ValorTotalInventario.ToString("C")</h6>
+                            <small class="text-muted">Valor Total</small>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-info">@Model.PrecioPromedio.ToString("C")</h6>
+                            <small class="text-muted">Precio Promedio</small>
+                        </div>
+                    </div>
+                    @if (Model.SucursalesAsignadas.Count > 1)
+                    {
+                        <hr>
+                        <div class="small">
+                            <strong>Rango de Precios:</strong><br>
+                            Mín: @Model.SucursalesAsignadas.Min(s => s.PrecioVenta).ToString("C")<br>
+                            Máx: @Model.SucursalesAsignadas.Max(s => s.PrecioVenta).ToString("C")
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.SucursalMasStock) && Model.SucursalMasStock != "N/A")
+                    {
+                        <hr>
+                        <div class="small">
+                            <strong>Mayor stock:</strong> @Model.SucursalMasStock<br>
+                            <strong>Menor stock:</strong> @Model.SucursalMenosStock
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <i class="bi bi-graph-up me-2"></i><strong>Estadísticas de Ventas</strong>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <div class="row">
+                        <div class="col-6">
+                            <h4 class="text-success">@Model.TotalVendido</h4>
+                            <small class="text-muted">Total Vendido</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info">@Model.IngresosGenerados.ToString("C")</h4>
+                            <small class="text-muted">Ingresos</small>
+                        </div>
+                    </div>
+                    @if (Model.StockTotal > 0 && Model.TotalVendido > 0)
+                    {
+                        <hr>
+                        <h6 class="text-primary">@(((double)Model.TotalVendido / Model.StockTotal).ToString("F2"))</h6>
+                        <small class="text-muted">Rotación Estimada</small>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Información del Proveedor</strong>
+            </div>
+            <div class="card-body">
+                @if (Model.Producto.ProveedorPrincipal != null)
+                {
+                    <dl class="row small">
+                        <dt class="col-5">Proveedor:</dt>
+                        <dd class="col-7">@Model.Producto.ProveedorPrincipal.NombreComercial</dd>
+                        <dt class="col-5">Contacto:</dt>
+                        <dd class="col-7">@Model.Producto.ProveedorPrincipal.ContactoPrincipal</dd>
+                        <dt class="col-5">Teléfono:</dt>
+                        <dd class="col-7">@Model.Producto.ProveedorPrincipal.TelefonoPrincipal</dd>
+                    </dl>
+                }
+                else
+                {
+                    <p class="text-muted small">Sin proveedor asignado</p>
+                }
+                <hr>
+                <dl class="row small">
+                    <dt class="col-5">Tiempo entrega:</dt>
+                    <dd class="col-7">@Model.Producto.TiempoEntregaDias días</dd>
+                    @if (!string.IsNullOrEmpty(Model.Producto.CodigoBarras))
+                    {
+                        <dt class="col-5">Código barras:</dt>
+                        <dd class="col-7">@Model.Producto.CodigoBarras</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-clock-history me-2"></i><strong>Información del Sistema</strong>
+            </div>
+            <div class="card-body">
+                <dl class="row small">
+                    <dt class="col-5">Creado:</dt>
+                    <dd class="col-7">@Model.Producto.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+                    @if (Model.Producto.UpdatedAt.HasValue)
+                    {
+                        <dt class="col-5">Modificado:</dt>
+                        <dd class="col-7">@Model.Producto.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                    }
+                    @if (Model.Producto.UsuarioCreador != null)
+                    {
+                        <dt class="col-5">Creado por:</dt>
+                        <dd class="col-7">@Model.Producto.UsuarioCreador.CodigoUsuario</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        /* Permitir que todos los errores de validación se muestren inicialmente */
+        /* El JavaScript se encargará de ocultar los incorrectos */
+        #asignacionRapidaForm .text-danger {
+            display: block !important;
+        }
+    </style>
+    
+    <script>
+        // Funciones para asignación rápida de sucursales
+        function seleccionarTodas() {
+            document.querySelectorAll('input[name="SucursalesSeleccionadas"]').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        }
+
+        function limpiarSeleccion() {
+            document.querySelectorAll('input[name="SucursalesSeleccionadas"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        }
+
+        async function asignarSucursalesRapido() {
+            console.log('?? Iniciando asignación de sucursales...');
+            
+            const form = document.getElementById('asignacionRapidaForm');
+            const formData = new FormData(form);
+            
+            // Debug: Mostrar todos los datos del formulario
+            console.log('?? Datos del formulario:');
+            for (let pair of formData.entries()) {
+                console.log(`  ${pair[0]}: ${pair[1]}`);
+            }
+            
+            // Verificar que se haya seleccionado al menos una sucursal
+            const sucursalesSeleccionadas = formData.getAll('SucursalesSeleccionadas');
+            console.log('?? Sucursales seleccionadas:', sucursalesSeleccionadas);
+            
+            if (sucursalesSeleccionadas.length === 0) {
+                console.warn('?? No hay sucursales seleccionadas');
+                showToast('error', 'Por favor selecciona al menos una sucursal.');
+                return;
+            }
+
+            // Validar precio de venta
+            const precioVenta = parseFloat(formData.get('PrecioVenta'));
+            console.log('?? Precio de venta:', precioVenta);
+            
+            if (!precioVenta || precioVenta <= 0) {
+                console.warn('?? Precio de venta inválido');
+                showToast('error', 'El precio de venta debe ser mayor a cero.');
+                return;
+            }
+
+            // Validar stock inicial si es requerido
+            const stockInicial = formData.get('StockInicial');
+            console.log('?? Stock inicial:', stockInicial);
+            
+            if (stockInicial !== null && (parseInt(stockInicial) < 0)) {
+                console.warn('?? Stock inicial inválido');
+                showToast('error', 'El stock inicial no puede ser negativo.');
+                return;
+            }
+
+            const submitButton = event.target;
+            const originalText = submitButton.innerHTML;
+            submitButton.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Asignando...';
+            submitButton.disabled = true;
+
+            try {
+                // Construir la URL completa del handler
+                const currentUrl = window.location.href;
+                const handlerUrl = currentUrl.includes('?') 
+                    ? `${currentUrl}&handler=AsignarSucursalesRapido`
+                    : `${currentUrl}?handler=AsignarSucursalesRapido`;
+                
+                console.log('?? URL del handler:', handlerUrl);
+
+                const response = await fetch(handlerUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        // No agregar Content-Type para FormData, el navegador lo maneja automáticamente
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                console.log('?? Respuesta del servidor:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries())
+                });
+
+                if (response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    console.log('?? Content-Type:', contentType);
+                    
+                    if (contentType && contentType.includes('application/json')) {
+                        const result = await response.json();
+                        console.log('? Resultado JSON:', result);
+                        
+                        if (result.success) {
+                            // Mostrar mensaje de éxito
+                            showToast('success', `Producto asignado exitosamente a ${result.sucursalesAsignadas} sucursal(es).`);
+                            
+                            // Recargar la página para mostrar los cambios
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            showToast('error', 'Error al asignar: ' + (result.message || 'Error desconocido'));
+                        }
+                    } else {
+                        // Probablemente retornó HTML en lugar de JSON
+                        const htmlText = await response.text();
+                        console.error('? La respuesta no es JSON. HTML recibido:', htmlText.substring(0, 500));
+                        
+                        if (htmlText.includes('<!DOCTYPE html') || htmlText.includes('<html')) {
+                            showToast('error', 'Error: El servidor retornó una página HTML en lugar de datos JSON. Revisa los permisos.');
+                        } else {
+                            showToast('error', 'Error: Respuesta inesperada del servidor.');
+                        }
+                    }
+                } else {
+                    const errorText = await response.text();
+                    console.error('? Error HTTP:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        body: errorText.substring(0, 500)
+                    });
+                    
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('?? Error completo:', error);
+                showToast('error', 'Error de conexión: ' + error.message);
+            } finally {
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+            }
+        }
+
+        // Función para mostrar notificaciones toast
+        function showToast(type, message) {
+            // Crear elemento toast
+            const toastContainer = document.getElementById('toast-container') || createToastContainer();
+            
+            const toastId = 'toast-' + Date.now();
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'}" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            
+            // Mostrar toast
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, { delay: 5000 });
+            toast.show();
+            
+            // Limpiar después de que se oculte
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
+        }
+
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '9999';
+            document.body.appendChild(container);
+            return container;
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            // Crear contenedor de toasts si no existe
+            if (!document.getElementById('toast-container')) {
+                createToastContainer();
+            }
+            
+            // SOLUCIÓN ESPECÍFICA: Ocultar solo errores de validación incorrectos
+            // que aparecen en elementos que NO están dentro de formularios activos
+            function hideInvalidValidationErrors() {
+                const allErrorElements = document.querySelectorAll('.text-danger');
+                
+                allErrorElements.forEach(error => {
+                    const errorText = error.textContent.trim();
+                    
+                    // Solo ocultar si contiene mensajes específicos de validación Y
+                    // NO está dentro del formulario de asignación rápida
+                    if ((errorText.includes('obligatori') || 
+                         errorText.includes('requerid') || 
+                         errorText.includes('La marca') ||
+                         errorText.includes('El código') ||
+                         errorText.includes('El nombre')) &&
+                        !error.closest('#asignacionRapidaForm')) {
+                        
+                        error.style.display = 'none';
+                        console.log('Ocultando error de validación incorrecto:', errorText);
+                    }
+                });
+            }
+            
+            // Ejecutar inmediatamente y después de un pequeño delay
+            hideInvalidValidationErrors();
+            setTimeout(hideInvalidValidationErrors, 100);
+            setTimeout(hideInvalidValidationErrors, 500);
+            
+            // También ejecutar cuando se muestren/oculten elementos dinámicamente
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.addedNodes.length) {
+                        hideInvalidValidationErrors();
+                    }
+                });
+            });
+            
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+    </script>
+}

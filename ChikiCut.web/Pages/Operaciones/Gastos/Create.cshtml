@@ -1,0 +1,454 @@
+@page
+@model ChikiCut.web.Pages.Operaciones.Gastos.CreateModel
+@{
+    ViewData["Title"] = "Captura de Gasto Operativo";
+}
+
+<style>
+.invalid-feedback-custom {
+    color: #fff;
+    background: #dc3545;
+    border-radius: 0.25rem;
+    padding: 0.25em 0.75em;
+    font-size: 0.95em;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    display: none;
+    box-shadow: 0 2px 8px rgba(220,53,69,0.15);
+}
+input.is-invalid, select.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220,53,69,.25);
+}
+</style>
+
+<script>
+// Serializa las listas de sucursales y conceptos para usarlas en JS
+window.sucursalesData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AllSucursales.Select(s => new { id = s.Id, name = s.Name, code = s.Code })));
+window.conceptosData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Conceptos.Select(c => new { id = c.Id, nombre = c.Nombre })));
+</script>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <form id="gastoForm" autocomplete="off">
+                <!-- Eliminado el resumen de validación por defecto -->
+                <div class="row mb-3 position-relative">
+                    <div class="col-md-6 position-relative">
+                        <label class="form-label">Sucursal</label>
+                        <select asp-for="Gasto.SucursalId" class="form-select" id="Gasto_SucursalId">
+                            <option value="">Selecciona...</option>
+                            @foreach (var sucursal in Model.SucursalesAsignadas)
+                            {
+                                <option value="@sucursal.Id">@sucursal.Name (@sucursal.Id/@sucursal.Code)</option>
+                            }
+                        </select>
+                        <div class="invalid-feedback-custom" id="alertSucursal"></div>
+                    </div>
+                    <div class="col-md-6 position-relative">
+                        <label class="form-label">Concepto</label>
+                        <select asp-for="Gasto.ConceptoGastoId" class="form-select" id="Gasto_ConceptoGastoId">
+                            <option value="">Selecciona...</option>
+                            @foreach (var concepto in Model.Conceptos)
+                            {
+                                <option value="@concepto.Id">@concepto.Nombre</option>
+                            }
+                        </select>
+                        <div class="invalid-feedback-custom" id="alertConcepto"></div>
+                    </div>
+                </div>
+                <div class="row mb-3 position-relative">
+                    <div class="col-md-6 position-relative">
+                        <label class="form-label">Monto</label>
+                        <input asp-for="Gasto.Monto" class="form-control" type="number" step="0.01" min="0" id="Gasto_Monto" />
+                        <div class="invalid-feedback-custom" id="alertMonto"></div>
+                    </div>
+                </div>
+                <div class="mb-3 position-relative">
+                    <label class="form-label">Método de Pago</label>
+                    <select asp-for="Gasto.MetodoPago" class="form-select" id="Gasto_MetodoPago">
+                        <option value="">Selecciona...</option>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Tarjeta">Tarjeta</option>
+                        <option value="Transferencia">Transferencia</option>
+                        <option value="Cheque">Cheque</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                    <div class="invalid-feedback-custom" id="alertMetodo"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Descripción</label>
+                    <input asp-for="Gasto.Descripcion" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Observaciones</label>
+                    <textarea asp-for="Gasto.Observaciones" class="form-control"></textarea>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Registrar Gasto</button>
+                </div>
+            </form>
+            <!-- Mensajes de éxito/error solo si corresponde -->
+            @if (!string.IsNullOrEmpty(Model.SuccessMessage) && string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-success">@Model.SuccessMessage</div>
+            }
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Gastos registrados</h5>
+                </div>
+                <div class="card-body p-0" id="gastosGridContainer">
+                    @await Html.PartialAsync("_GastosGrid", await Model.GetGridRowsAsync())
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Delegación en contenedor estable
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('gastosGridContainer') || document;
+            // Editar
+            container.addEventListener('click', function(ev) {
+                const btn = ev.target.closest('.btn-editar-gasto');
+                if (btn) {
+                    const id = Number(btn.dataset.gastoId);
+                    abrirModalEdicion(id);
+                    return;
+                }
+                // Eliminar
+                const btnDel = ev.target.closest('.btn-eliminar-gasto');
+                if (btnDel) {
+                    const id = Number(btnDel.dataset.gastoId);
+                    if (confirm('¿Seguro que deseas eliminar este gasto? Esta acción no se puede deshacer.')) {
+                        eliminarGasto(id);
+                    }
+                }
+            });
+        });
+
+        function setVisible(el, visible) {
+            if (!el) return;
+            el.classList.toggle('d-none', !visible);
+        }
+        function ensureSelectValue(selectEl, value, textIfMissing = '') {
+            if (!selectEl) return;
+            const valStr = value != null ? String(value) : '';
+            let opt = [...selectEl.options].find(o => o.value === valStr);
+            if (!opt && valStr) {
+                opt = new Option(textIfMissing || valStr, valStr);
+                selectEl.add(opt);
+            }
+            selectEl.value = valStr;
+            selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        function limpiarModalEdicion() {
+            const ids = ['editGastoId','editMonto','editDescripcion','editObservaciones','editMetodoPago','editFecha'];
+            ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        }
+        function poblarSelectConDatos(selectId, data, valueProp, textProp, selectedValue) {
+            const sel = document.getElementById(selectId);
+            if (!sel) return;
+            sel.innerHTML = '';
+            data.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item[valueProp];
+                opt.textContent = item[textProp];
+                if (String(item[valueProp]) === String(selectedValue)) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+        async function abrirModalEdicion(id) {
+            const modalEl = document.getElementById('editGastoModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl, { backdrop: 'static', keyboard: false });
+            const spinner = document.getElementById('editModalSpinner');
+            limpiarModalEdicion();
+            setVisible(spinner, true);
+            try {
+                const res = await fetch(`?handler=GetGasto&id=${encodeURIComponent(id)}`, { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) throw new Error(`Error ${res.status} al obtener gasto`);
+                const gasto = await res.json();
+                const fechaStr = gasto?.fecha ? String(gasto.fecha).substring(0,10) : '';
+                poblarSelectConDatos('editSucursalId', window.sucursalesData, 'id', 'name', gasto.sucursalId);
+                poblarSelectConDatos('editConceptoId', window.conceptosData, 'id', 'nombre', gasto.conceptoGastoId);
+                const set = (id, val='') => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+                set('editGastoId', gasto?.id);
+                set('editMonto', gasto?.monto);
+                set('editDescripcion', gasto?.descripcion);
+                set('editObservaciones', gasto?.observaciones);
+                set('editMetodoPago', gasto?.metodoPago);
+                set('editFecha', fechaStr);
+                await new Promise(requestAnimationFrame);
+                modal.show();
+                setTimeout(() => document.getElementById('editMonto')?.focus(), 50);
+            } catch (err) {
+                console.error('No se pudo cargar el gasto:', err);
+                alert('No se pudo cargar el gasto. Intenta de nuevo.');
+            } finally {
+                setVisible(spinner, false);
+            }
+        }
+
+        function validarGastoForm() {
+            let valido = true;
+            // Limpia alertas previas
+            document.querySelectorAll('.invalid-feedback-custom').forEach(e => e.style.display = 'none');
+            document.querySelectorAll('.is-invalid').forEach(e => e.classList.remove('is-invalid'));
+
+            // Sucursal
+            const sucursal = document.getElementById('Gasto_SucursalId');
+            if (!sucursal.value) {
+                document.getElementById('alertSucursal').textContent = 'Selecciona una sucursal';
+                document.getElementById('alertSucursal').style.display = 'block';
+                sucursal.classList.add('is-invalid');
+                valido = false;
+            }
+            // Concepto
+            const concepto = document.getElementById('Gasto_ConceptoGastoId');
+            if (!concepto.value) {
+                document.getElementById('alertConcepto').textContent = 'Selecciona un concepto';
+                document.getElementById('alertConcepto').style.display = 'block';
+                concepto.classList.add('is-invalid');
+                valido = false;
+            }
+            // Método de pago
+            const metodo = document.getElementById('Gasto_MetodoPago');
+            if (!metodo.value) {
+                document.getElementById('alertMetodo').textContent = 'Selecciona un método de pago';
+                document.getElementById('alertMetodo').style.display = 'block';
+                metodo.classList.add('is-invalid');
+                valido = false;
+            }
+            // Importe
+            const monto = document.getElementById('Gasto_Monto');
+            if (!monto.value || isNaN(monto.value) || parseFloat(monto.value) <= 0) {
+                document.getElementById('alertMonto').textContent = 'Ingresa un importe válido';
+                document.getElementById('alertMonto').style.display = 'block';
+                monto.classList.add('is-invalid');
+                valido = false;
+            }
+            return valido;
+        }
+
+        function asociarEditGastoFormListener() {
+            const form = document.getElementById('editGastoForm');
+            if (!form) return;
+            form.onsubmit = null;
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const dataObj = Object.fromEntries(formData.entries());
+                console.log('[editGastoForm] Enviando datos:', dataObj);
+                for (const [k, v] of formData.entries()) {
+                    console.log(`[editGastoForm] field: ${k} =`, v);
+                }
+                if (!dataObj.editGastoId || !dataObj.editSucursalId || !dataObj.editConceptoId || !dataObj.editMonto) {
+                    alert('Todos los campos obligatorios deben estar llenos.');
+                    return;
+                }
+                fetch('/api/GastosApi/editar', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(async response => {
+                    console.log('[editGastoForm] RAW response:', response);
+                    let text = await response.text();
+                    console.log('[editGastoForm] RAW response text:', text);
+                    let result;
+                    try {
+                        result = JSON.parse(text);
+                    } catch (err) {
+                        console.error('[editGastoForm] Error parseando JSON:', err, text);
+                        alert('Respuesta no es JSON válido: ' + text);
+                        return;
+                    }
+                    console.log('[editGastoForm] Respuesta del backend:', result);
+                    if (response.ok && result.success) {
+                        var modal = bootstrap.Modal.getInstance(document.getElementById('editGastoModal'));
+                        if (modal) modal.hide();
+                        // SIEMPRE recarga el grid tras editar para evitar inconsistencias y errores JS
+                        if (typeof recargarGastosGrid === 'function') {
+                            setTimeout(() => recargarGastosGrid(), 0);
+                        }
+                        recalcularTotalGastos();
+                        const msg = document.createElement('div');
+                        msg.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+                        msg.textContent = '¡Gasto actualizado correctamente!';
+                        document.body.appendChild(msg);
+                        setTimeout(() => msg.remove(), 2000);
+                    } else {
+                        alert((result.message || 'Error al guardar los cambios') + (result.error ? '\n' + result.error : ''));
+                        if (result.modelErrors) {
+                            console.error('[editGastoForm] ModelState errors:', result.modelErrors);
+                        }
+                        if (result.error) {
+                            console.error('Detalle del error:', result.error);
+                        }
+                    }
+                })
+                .catch((err) => {
+                    console.error('[editGastoForm] Error AJAX:', err);
+                    alert('Error al guardar los cambios: ' + err);
+                });
+            });
+        }
+
+        async function recargarGastosGrid() {
+            const response = await fetch(window.location.pathname + '?handler=GastosGridPartial', {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            if (response.ok) {
+                const html = await response.text();
+                document.getElementById('gastosGridContainer').innerHTML = html;
+                recalcularTotalGastos(); // recalcula el total justo después de recargar el grid
+            }
+        }
+
+        document.getElementById('gastoForm').addEventListener('submit', async function (e) {
+            if (!validarGastoForm()) {
+                e.preventDefault();
+                document.querySelectorAll('.alert-success.position-fixed').forEach(el => el.remove());
+                return false;
+            }
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('sucursalId', document.getElementById('Gasto_SucursalId').value);
+            formData.append('conceptoId', document.getElementById('Gasto_ConceptoGastoId').value);
+            formData.append('monto', document.getElementById('Gasto_Monto').value);
+            formData.append('metodoPago', document.getElementById('Gasto_MetodoPago').value);
+            formData.append('descripcion', document.querySelector('[name="Gasto.Descripcion"]').value);
+            formData.append('observaciones', document.querySelector('[name="Gasto.Observaciones"]').value);
+
+            const response = await fetch('/api/GastosApi/agregar', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include' // <-- necesario para enviar cookies de autenticación
+            });
+            const result = await response.json();
+            if (result.success) {
+                const msg = document.createElement('div');
+                msg.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+                msg.textContent = '¡Gasto registrado correctamente!';
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 2000);
+                await recargarGastosGrid(); // <-- recarga el grid
+            } else {
+                // Opcional: mostrar mensaje de error
+                // alert(result.message || 'Error al guardar los cambios');
+            }
+        });
+
+        window.cargarDatosGasto = function(id) {
+            console.log('[cargarDatosGasto] Solicitando datos para ID:', id);
+            fetch(`?handler=GetGasto&id=${id}`)
+                .then(response => response.json())
+                .then(gasto => {
+                    console.log('[cargarDatosGasto] Datos del gasto:', gasto);
+                    // Asigna SIEMPRE los valores antes de mostrar el modal
+                    document.getElementById('editGastoId').value = gasto.id || '';
+                    document.getElementById('editMonto').value = gasto.monto || '';
+                    document.getElementById('editDescripcion').value = gasto.descripcion || '';
+                    document.getElementById('editObservaciones').value = gasto.observaciones || '';
+                    document.getElementById('editSucursalId').value = gasto.sucursalId || '';
+                    document.getElementById('editConceptoId').value = gasto.conceptoGastoId || '';
+                    document.getElementById('editMetodoPago').value = gasto.metodoPago || '';
+                    // Precarga la fecha en formato yyyy-MM-dd
+                    if (gasto.fecha) {
+                        let fecha = gasto.fecha;
+                        if (fecha.length > 10) fecha = fecha.substring(0, 10);
+                        document.getElementById('editFecha').value = fecha;
+                    } else {
+                        document.getElementById('editFecha').value = '';
+                    }
+                    // Abre el modal después de asignar los valores
+                    const modal = new bootstrap.Modal(document.getElementById('editGastoModal'));
+                    modal.show();
+                });
+        }
+
+        function recalcularTotalGastos() {
+            const filas = document.querySelectorAll('#gastosGridContainer tbody tr');
+            let total = 0;
+            filas.forEach(fila => {
+                const montoCell = fila.querySelector('td:nth-child(3)');
+                if (!montoCell) return; // Protección contra null
+                const monto = montoCell.textContent.replace(/[^0-9.-]+/g,"");
+                total += parseFloat(monto) || 0;
+            });
+            const totalGastosEl = document.getElementById('totalGastos');
+            if (totalGastosEl) {
+                totalGastosEl.textContent = total.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            asociarEditGastoFormListener();
+        });
+        async function submitEdicionGasto(formEl) {
+  const id = Number(formEl.querySelector('[name="editGastoId"]').value);
+  const sucSel = document.getElementById('editSucursalId');
+  const conSel = document.getElementById('editConceptoId');
+  const montoRaw = formEl.querySelector('[name="editMonto"]').value;
+  const metodoPago = formEl.querySelector('[name="editMetodoPago"]')?.value ?? '';
+  const descripcion = formEl.querySelector('[name="editDescripcion"]')?.value ?? '';
+  const observaciones = formEl.querySelector('[name="editObservaciones"]')?.value ?? '';
+
+  const fd = new FormData(formEl);
+  let data;
+  try {
+    const res = await fetch('/api/GastosApi/editar', { method: 'POST', body: fd, headers: { 'Accept':'application/json' } });
+    data = await res.json();
+    if (!res.ok || !data?.success) throw new Error(data?.message || 'Error al guardar los cambios');
+  } catch (apiErr) {
+    showSuccessToast(apiErr.message || 'Error al guardar los cambios');
+    return;
+  }
+
+  // No intentes manipular celdas sueltas ni usar tryUpdateRowSafely
+  if (typeof recargarGastosGrid === 'function') {
+    setTimeout(() => recargarGastosGrid(), 0);
+  }
+
+  showSuccessToast(data?.message || 'Gasto actualizado correctamente.');
+  cerrarModalEdicion?.();
+}
+
+async function eliminarGasto(id) {
+    try {
+        console.log('[eliminarGasto] Eliminando gasto con id:', id);
+        const response = await fetch(`/api/GastosApi/eliminar/${id}`, {
+            method: 'DELETE',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+            credentials: 'include'
+        });
+        console.log('[eliminarGasto] response status:', response.status);
+        let result = null;
+        try {
+            result = await response.json();
+            console.log('[eliminarGasto] response json:', result);
+        } catch (jsonErr) {
+            console.error('[eliminarGasto] Error parseando JSON:', jsonErr);
+        }
+        if (response.ok && result && result.success) {
+            await recargarGastosGrid();
+            const msg = document.createElement('div');
+            msg.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+            msg.textContent = '¡Gasto eliminado correctamente!';
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 2000);
+        } else {
+            alert((result && result.message) || 'Error al eliminar el gasto.');
+        }
+    } catch (err) {
+        console.error('[eliminarGasto] Error de red o autenticación:', err);
+        alert('Error al eliminar el gasto: ' + err);
+    }
+}
+    </script>
+}

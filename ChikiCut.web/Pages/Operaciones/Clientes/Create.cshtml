@@ -1,0 +1,132 @@
+@page
+@model ChikiCut.web.Pages.Operaciones.Clientes.CreateModel
+@{
+    ViewData["Title"] = "Agregar Cliente";
+}
+
+<h1>Agregar Cliente</h1>
+
+@if (!string.IsNullOrEmpty(Model.DebugError))
+{
+    <div class="alert alert-warning">
+        <strong>Debug Error:</strong>
+        <pre>@Model.DebugError</pre>
+    </div>
+}
+
+@if (!Model.HasCreatePermission)
+{
+    <div class="alert alert-danger">No tienes permiso para agregar clientes.</div>
+}
+else
+{
+    <form method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="NombreCompleto" class="form-label">Nombre Completo</label>
+                <input asp-for="Cliente.NombreCompleto" class="form-control" placeholder="Nombre(s) y Apellidos" id="nombreClienteInput" autocomplete="off" />
+                <span asp-validation-for="Cliente.NombreCompleto" class="text-danger"></span>
+                <div id="coincidenciasClientes" class="list-group mt-1"></div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="Email" class="form-label">Email</label>
+                <input asp-for="Cliente.Email" class="form-control" />
+                <span asp-validation-for="Cliente.Email" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label for="Telefono" class="form-label">Teléfono</label>
+                <input asp-for="Cliente.Telefono" class="form-control" />
+                <span asp-validation-for="Cliente.Telefono" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label for="Pais" class="form-label">País</label>
+                <input asp-for="Cliente.Pais" class="form-control" value="México" />
+                <span asp-validation-for="Cliente.Pais" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="FechaNacimiento" class="form-label">Fecha de Nacimiento</label>
+                <input asp-for="Cliente.FechaNacimiento" class="form-control" type="date" />
+                <span asp-validation-for="Cliente.FechaNacimiento" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label for="Genero" class="form-label">Género</label>
+                <select asp-for="Cliente.Genero" class="form-select">
+                    <option value="">Selecciona...</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                    <option value="Otro">Otro</option>
+                </select>
+                <span asp-validation-for="Cliente.Genero" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="Direccion" class="form-label">Dirección</label>
+                <input asp-for="Cliente.Direccion" class="form-control" />
+                <span asp-validation-for="Cliente.Direccion" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label for="Ciudad" class="form-label">Ciudad</label>
+                <input asp-for="Cliente.Ciudad" class="form-control" />
+                <span asp-validation-for="Cliente.Ciudad" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label for="Estado" class="form-label">Estado</label>
+                <input asp-for="Cliente.Estado" class="form-control" />
+                <span asp-validation-for="Cliente.Estado" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="CodigoPostal" class="form-label">Código Postal</label>
+                <input asp-for="Cliente.CodigoPostal" class="form-control" />
+                <span asp-validation-for="Cliente.CodigoPostal" class="text-danger"></span>
+            </div>
+            <div class="col-md-8">
+                <label for="Notas" class="form-label">Notas</label>
+                <textarea asp-for="Cliente.Notas" class="form-control"></textarea>
+                <span asp-validation-for="Cliente.Notas" class="text-danger"></span>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var nombreInput = document.getElementById('nombreClienteInput');
+            var coincidenciasDiv = document.getElementById('coincidenciasClientes');
+            let timeout = null;
+            nombreInput.addEventListener('input', function() {
+                clearTimeout(timeout);
+                var valor = nombreInput.value;
+                if (valor.length < 2) {
+                    coincidenciasDiv.innerHTML = '';
+                    return;
+                }
+                timeout = setTimeout(function() {
+                    fetch(`/api/clientes/buscar?nombre=${encodeURIComponent(valor)}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            coincidenciasDiv.innerHTML = '';
+                            if (data.length > 0) {
+                                data.forEach(function(cliente) {
+                                    var item = document.createElement('div');
+                                    item.className = 'list-group-item';
+                                    item.textContent = cliente.nombreCompleto + (cliente.email ? ' (' + cliente.email + ')' : '');
+                                    coincidenciasDiv.appendChild(item);
+                                });
+                            }
+                        });
+                }, 400);
+            });
+        });
+    </script>
+}

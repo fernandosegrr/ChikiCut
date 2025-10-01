@@ -1,0 +1,280 @@
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    var userName = "";
+    var userRole = "";
+    var userLevel = 0;
+    var session = HttpContextAccessor.HttpContext?.Session;
+    if (session != null)
+    {
+        userName = session.GetString("UserName") ?? "";
+        userRole = session.GetString("UserRole") ?? "";
+        userLevel = session.GetInt32("UserLevel") ?? 0;
+    }
+    var page = ViewContext.RouteData.Values["page"]?.ToString();
+}
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChikiCut</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ChikiCut.web.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark chikicut-navbar">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-page="/Index">
+                    <div class="brand-logo me-2">
+                        <i class="bi bi-scissors text-warning"></i>
+                    </div>
+                    <div class="brand-text">
+                        <span class="brand-main">ChikiCut</span>
+                        <small class="brand-subtitle d-block">Sistema de Gestión</small>
+                    </div>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <div class="navbar-nav me-auto">
+                        @if (!string.IsNullOrEmpty(userName))
+                        {
+                            if (page != null && page.StartsWith("/Admin"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle active" href="#" id="adminDropdown" role="button" 
+                                       data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-gear me-1"></i>Panel Administrativo
+                                  </a>
+                                    <ul class="dropdown-menu chikicut-dropdown" aria-labelledby="adminDropdown">
+                                        <li><h6 class="dropdown-header">🏢 Infraestructura</h6></li>
+                                        <li><a class="dropdown-item" asp-page="/Sucursales/Index"><i class="bi bi-building text-primary me-2"></i>Sucursales</a></li>
+                                        <li><a class="dropdown-item" asp-page="/Empleados/Index"><i class="bi bi-people text-success me-2"></i>Empleados</a></li>
+                                        <li><a class="dropdown-item" asp-page="/Puestos/Index"><i class="bi bi-person-workspace text-info me-2"></i>Puestos</a></li>
+                                        @if (userLevel >= 4)
+                                        {
+                                            <li><a class="dropdown-item" asp-page="/Usuarios/Index"><i class="bi bi-people-fill text-warning me-2"></i>Usuarios</a></li>
+                                            <li><a class="dropdown-item" asp-page="/Roles/Index"><i class="bi bi-shield-check text-danger me-2"></i>Roles</a></li>
+                                        }
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">📦 Catálogos</h6></li>
+                                        <li><a class="dropdown-item" asp-page="/Productos/Index"><i class="bi bi-box-seam text-dark me-2"></i>Productos</a></li>
+                                        <li><a class="dropdown-item" asp-page="/Servicios/Index"><i class="bi bi-scissors text-warning me-2"></i>Servicios</a></li>
+                                        <li><a class="dropdown-item" asp-page="/Proveedores/Index"><i class="bi bi-truck text-warning me-2"></i>Proveedores</a></li>
+                                        <li><a class="dropdown-item" asp-page="/ConceptosGasto/Index"><i class="bi bi-cash-coin text-danger me-2"></i>Conceptos de Gastos</a></li>
+                                        @if (userLevel >= 4)
+                                        {
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><h6 class="dropdown-header">🛠️ Herramientas</h6></li>
+                                            <li><a class="dropdown-item" asp-page="/Catalogos/MatrizGlobal"><i class="bi bi-grid-3x3-gap text-primary me-2"></i>Matriz Global</a></li>
+                                        }
+                                    </ul>
+                                </li>
+                            }
+                            else if (page != null && page.StartsWith("/Operaciones"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle active" href="#" id="operacionesDropdown" role="button" 
+                                       data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-briefcase me-1"></i>Panel Operativo
+                                    </a>
+                                    <ul class="dropdown-menu chikicut-dropdown" aria-labelledby="operacionesDropdown">
+                                        <li><h6 class="dropdown-header">👥 Atención al Cliente</h6></li>
+                                        <li><a class="dropdown-item" asp-page="/Operaciones/Clientes/Index"><i class="bi bi-person-hearts text-primary me-2"></i>Clientes</a></li>
+                                        <li><a class="dropdown-item text-muted" href="#"><i class="bi bi-calendar-check text-success me-2"></i>Agenda y Citas <small>(Próximamente)</small></a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">💰 Ventas</h6></li>
+                                        <li><a class="dropdown-item" asp-page="/Operaciones/PuntoVenta/Index"><i class="bi bi-cash-register text-success me-2"></i>Punto de Venta</a></li>
+                                        <li><a class="dropdown-item text-muted" href="#"><i class="bi bi-receipt text-info me-2"></i>Historial de Ventas <small>(Próximamente)</small></a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">📦 Inventario</h6></li>
+                                        <li><a class="dropdown-item text-muted" href="#"><i class="bi bi-boxes text-warning me-2"></i>Control de Stock <small>(Próximamente)</small></a></li>
+                                        <li><a class="dropdown-item text-muted" href="#"><i class="bi bi-truck text-primary me-2"></i>Recepción <small>(Próximamente)</small></a></li>
+                                        @if (userLevel >= 2)
+                                        {
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><h6 class="dropdown-header">💵 Finanzas</h6></li>
+                                            <li><a class="dropdown-item text-muted" href="#"><i class="bi bi-wallet text-success me-2"></i>Caja del Día <small>(Próximamente)</small></a></li>
+                                            <li><a class="dropdown-item text-danger" href="/Operaciones/Gastos">
+                                                <i class="bi bi-cash-coin text-danger me-2"></i>Gastos
+                                            </a></li>
+                                            <li><a class="dropdown-item text-muted" href="#"><i class="bi bi-graph-up text-info me-2"></i>Reportes <small>(Próximamente)</small></a></li>
+                                        }
+                                    </ul>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/">
+                                        <i class="bi bi-house me-1"></i>Hub Principal
+                                    </a>
+                                </li>
+                                @if (userLevel >= 3)
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="/Admin/Dashboard">
+                                            <i class="bi bi-gear me-1"></i>Administración
+                                        </a>
+                                    </li>
+                                }
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/Operaciones/Dashboard">
+                                        <i class="bi bi-briefcase me-1"></i>Operaciones
+                                    </a>
+                                </li>
+                            }
+                            if (page != null && page != "/Index")
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navegacionDropdown" role="button" 
+                                       data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-arrow-repeat me-1"></i>Cambiar Área
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="navegacionDropdown">
+                                        <li><a class="dropdown-item" href="/"><i class="bi bi-house text-secondary me-2"></i>Hub Principal</a></li>
+                                        @if (userLevel >= 3)
+                                        {
+                                            <li><a class="dropdown-item" href="/Admin/Dashboard"><i class="bi bi-gear text-primary me-2"></i>Panel Administrativo</a></li>
+                                        }
+                                        <li><a class="dropdown-item" href="/Operaciones/Dashboard"><i class="bi bi-briefcase text-success me-2"></i>Panel Operativo</a></li>
+                                    </ul>
+                                </li>
+                            }
+                        }
+                    </div>
+                    <div class="navbar-nav">
+                        @if (!string.IsNullOrEmpty(userName))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle me-1"></i>@userName
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    <li><h6 class="dropdown-header">Información de Usuario</h6></li>
+                                    <li><span class="dropdown-item-text"><strong>Usuario:</strong> @userName</span></li>
+                                    <li><span class="dropdown-item-text"><strong>Rol:</strong> @userRole</span></li>
+                                    <li><span class="dropdown-item-text"><strong>Nivel:</strong> @userLevel</span></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-page="/Account/Profile"><i class="bi bi-person me-2"></i>Mi Perfil</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Account/ChangePassword"><i class="bi bi-key me-2"></i>Cambiar Contraseña</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-page="/Account/Logout"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</a></li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-page="/Account/Login"><i class="bi bi-box-arrow-in-right me-1"></i>Iniciar Sesión</a>
+                            </li>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main class="flex-grow-1">
+        <div class="container-fluid py-4">
+            @RenderBody()
+        </div>
+    </main>
+    <footer class="chikicut-footer mt-auto py-4">
+        <div class="container text-center">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-md-start">
+                    <span class="text-muted">
+                        &copy; 2025 <strong>ChikiCut</strong> - Kid's Beauty Shop
+                    </span>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small class="text-muted">
+                        <i class="bi bi-code-square me-1"></i>
+                        Sistema de Gestión v1.0
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
+      <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body" id="successToastBody"></div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", required: false)
+    <!-- MODAL DE EDICIÓN DE GASTO: SIEMPRE FUERA DE CONTENEDORES DINÁMICOS -->
+    <div class="modal fade" id="editGastoModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar gasto</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="editGastoId">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Sucursal</label>
+                <select id="editSucursalId" class="form-select"></select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Concepto</label>
+                <select id="editConceptoId" class="form-select"></select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Método pago</label>
+                <input id="editMetodoPago" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Monto</label>
+                <input id="editMonto" class="form-control" inputmode="decimal">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Fecha</label>
+                <input id="editFecha" type="date" class="form-control">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Descripción</label>
+                <input id="editDescripcion" class="form-control">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Observaciones</label>
+                <input id="editObservaciones" class="form-control">
+              </div>
+            </div>
+            <div id="editModalSpinner" class="d-none mt-3">
+              <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="btnGuardarEdicion" type="button" class="btn btn-primary">Guardar</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+    function showSuccessToast(message) {
+        const toastBody = document.getElementById('successToastBody');
+        if (toastBody) toastBody.textContent = message || '¡Cambios guardados con éxito!';
+        const toastEl = document.getElementById('successToast');
+        if (toastEl) {
+            const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
+            toast.show();
+        }
+    }
+    </script>
+</body>
+</html>

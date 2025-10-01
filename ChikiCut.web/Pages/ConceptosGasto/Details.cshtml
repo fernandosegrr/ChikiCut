@@ -1,0 +1,381 @@
+@page
+@model ChikiCut.web.Pages.ConceptosGasto.DetailsModel
+@{
+    ViewData["Title"] = "Detalles del Concepto";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1><i class="bi bi-cash-coin me-2"></i>@Model.ConceptoGasto.Nombre</h1>
+            <p class="text-muted">Información detallada del concepto de gasto</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" role="group">
+                <a asp-page="Edit" asp-route-id="@Model.ConceptoGasto.Id" class="btn btn-primary">
+                    <i class="bi bi-pencil me-1"></i>Editar
+                </a>
+                <a asp-page="Delete" asp-route-id="@Model.ConceptoGasto.Id" class="btn btn-outline-danger">
+                    <i class="bi bi-trash me-1"></i>Eliminar
+                </a>
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Información básica -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Información Básica</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Código:</dt>
+                            <dd class="col-sm-8"><span class="badge bg-primary">@Model.ConceptoGasto.Codigo</span></dd>
+                            <dt class="col-sm-4">Nombre:</dt>
+                            <dd class="col-sm-8"><strong>@Model.ConceptoGasto.Nombre</strong></dd>
+                            <dt class="col-sm-4">Categoría:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge @(Model.ConceptoGasto.Categoria switch {
+                                    "Servicios" => "bg-info",
+                                    "Insumos" => "bg-success", 
+                                    "Mantenimiento" => "bg-warning text-dark",
+                                    "Administrativo" => "bg-secondary",
+                                    "Marketing" => "bg-primary",
+                                    "Recursos Humanos" => "bg-danger",
+                                    _ => "bg-dark"
+                                })">
+                                    @Model.ConceptoGasto.Categoria
+                                </span>
+                                @if (!string.IsNullOrEmpty(Model.ConceptoGasto.Subcategoria))
+                                {
+                                    <br><small class="text-muted">@Model.ConceptoGasto.Subcategoria</small>
+                                }
+                            </dd>
+                            <dt class="col-sm-4">Estado:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge @(Model.ConceptoGasto.IsActive ? "bg-success" : "bg-secondary")">
+                                    @(Model.ConceptoGasto.IsActive ? "Activo" : "Inactivo")
+                                </span>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-5">Frecuencia:</dt>
+                            <dd class="col-sm-7">
+                                <span class="badge bg-light text-dark">@Model.ConceptoGasto.TipoFrecuencia</span>
+                            </dd>
+                            <dt class="col-sm-5">Creado:</dt>
+                            <dd class="col-sm-7">@Model.ConceptoGasto.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+                            @if (Model.ConceptoGasto.UpdatedAt.HasValue)
+                            {
+                                <dt class="col-sm-5">Modificado:</dt>
+                                <dd class="col-sm-7">@Model.ConceptoGasto.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                            }
+                            @if (Model.ConceptoGasto.UsuarioCreador != null)
+                            {
+                                <dt class="col-sm-5">Creado por:</dt>
+                                <dd class="col-sm-7">@Model.ConceptoGasto.UsuarioCreador.NombreCompleto</dd>
+                            }
+                        </dl>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.ConceptoGasto.Descripcion))
+                {
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <dt>Descripción:</dt>
+                            <dd class="mt-2">@Model.ConceptoGasto.Descripcion</dd>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Controles Financieros -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-shield-check me-2"></i><strong>Controles Financieros</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-6">Límite Máximo:</dt>
+                            <dd class="col-sm-6">
+                                @if (Model.ConceptoGasto.LimiteMaximo.HasValue)
+                                {
+                                    <span class="text-warning fw-bold">@Model.ConceptoGasto.LimiteMaximo.Value.ToString("C")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin límite</span>
+                                }
+                            </dd>
+                            <dt class="col-sm-6">Comprobante:</dt>
+                            <dd class="col-sm-6">
+                                @if (Model.ConceptoGasto.RequiereComprobante)
+                                {
+                                    <span class="text-primary">
+                                        <i class="bi bi-file-earmark-text me-1"></i>Obligatorio
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        <i class="bi bi-file-earmark me-1"></i>Opcional
+                                    </span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-6">Autorización:</dt>
+                            <dd class="col-sm-6">
+                                @if (Model.ConceptoGasto.RequiereAutorizacion)
+                                {
+                                    <span class="text-warning">
+                                        <i class="bi bi-lock-fill me-1"></i>Nivel @Model.ConceptoGasto.NivelAutorizacionRequerido
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-success">
+                                        <i class="bi bi-check-circle me-1"></i>No requiere
+                                    </span>
+                                }
+                            </dd>
+                            @if (!string.IsNullOrEmpty(Model.ConceptoGasto.CuentaContable))
+                            {
+                                <dt class="col-sm-6">Cuenta Contable:</dt>
+                                <dd class="col-sm-6"><code>@Model.ConceptoGasto.CuentaContable</code></dd>
+                            }
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sucursales Aplicables -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-building me-2"></i><strong>Sucursales Aplicables</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <dt>Alcance:</dt>
+                        <dd>
+                            @if (Model.ConceptoGasto.AplicaTodasSucursales)
+                            {
+                                <span class="text-success">
+                                    <i class="bi bi-buildings me-1"></i>Todas las sucursales
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-info">
+                                    <i class="bi bi-building me-1"></i>Sucursales específicas
+                                </span>
+                            }
+                        </dd>
+                        
+                        @if (!Model.ConceptoGasto.AplicaTodasSucursales && Model.SucursalesAplicables.Any())
+                        {
+                            <dt class="mt-3">Sucursales específicas:</dt>
+                            <dd class="mt-2">
+                                @foreach (var sucursal in Model.SucursalesAplicables)
+                                {
+                                    <span class="badge bg-info me-1 mb-1">
+                                        <i class="bi bi-building me-1"></i>@sucursal.Name
+                                    </span>
+                                }
+                            </dd>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Etiquetas -->
+        @if (Model.ConceptoGasto.TagsList.Any())
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-tags me-2"></i><strong>Etiquetas</strong>
+                </div>
+                <div class="card-body">
+                    @foreach (var tag in Model.ConceptoGasto.TagsList)
+                    {
+                        <span class="badge bg-light text-dark me-1 mb-1">#@tag</span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Panel lateral -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-bar-chart me-2"></i><strong>Resumen</strong>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-12 mb-3">
+                        <h4 class="@(Model.ConceptoGasto.IsActive ? "text-success" : "text-secondary")">
+                            @(Model.ConceptoGasto.IsActive ? "ACTIVO" : "INACTIVO")
+                        </h4>
+                        <small class="text-muted">Estado del concepto</small>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="small">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Requiere autorización:</span>
+                        <span class="@(Model.ConceptoGasto.RequiereAutorizacion ? "text-warning" : "text-success")">
+                            @(Model.ConceptoGasto.RequiereAutorizacion ? "Sí" : "No")
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Requiere comprobante:</span>
+                        <span class="@(Model.ConceptoGasto.RequiereComprobante ? "text-primary" : "text-muted")">
+                            @(Model.ConceptoGasto.RequiereComprobante ? "Sí" : "No")
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Nivel autorización:</span>
+                        <span class="text-info">@Model.ConceptoGasto.NivelDescripcion</span>
+                    </div>
+                    @if (Model.ConceptoGasto.LimiteMaximo.HasValue)
+                    {
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Límite máximo:</span>
+                            <span class="text-warning">@Model.ConceptoGasto.LimiteMaximo.Value.ToString("C")</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Información del Concepto</strong>
+            </div>
+            <div class="card-body">
+                <h6 class="text-primary">@Model.ConceptoGasto.Categoria</h6>
+                <p class="small mb-3">
+                    @switch (Model.ConceptoGasto.Categoria)
+                    {
+                        case "Servicios":
+                            <text>Gastos relacionados con servicios básicos y especializados necesarios para la operación.</text>
+                            break;
+                        case "Insumos":
+                            <text>Productos y materiales utilizados directamente en la prestación de servicios.</text>
+                            break;
+                        case "Mantenimiento":
+                            <text>Gastos para conservar en buen estado equipos e instalaciones.</text>
+                            break;
+                        case "Administrativo":
+                            <text>Gastos relacionados con la gestión y administración del negocio.</text>
+                            break;
+                        case "Marketing":
+                            <text>Inversiones en promoción, publicidad y captación de clientes.</text>
+                            break;
+                        case "Recursos Humanos":
+                            <text>Gastos relacionados con el personal y su desarrollo profesional.</text>
+                            break;
+                        default:
+                            <text>Otros gastos diversos no clasificados en categorías específicas.</text>
+                            break;
+                    }
+                </p>
+                
+                <h6 class="text-info">Frecuencia: @Model.ConceptoGasto.TipoFrecuencia</h6>
+                <p class="small">
+                    @switch (Model.ConceptoGasto.TipoFrecuencia)
+                    {
+                        case "Diario":
+                            <text>Gasto que ocurre todos los días o con alta frecuencia.</text>
+                            break;
+                        case "Semanal":
+                            <text>Gasto que se presenta semanalmente o varias veces por semana.</text>
+                            break;
+                        case "Mensual":
+                            <text>Gasto recurrente que se presenta mensualmente.</text>
+                            break;
+                        case "Ocasional":
+                            <text>Gasto que ocurre esporádicamente según necesidades específicas.</text>
+                            break;
+                    }
+                </p>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-gear me-2"></i><strong>Acciones</strong>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-page="Edit" asp-route-id="@Model.ConceptoGasto.Id" class="btn btn-primary btn-sm">
+                        <i class="bi bi-pencil me-1"></i>Editar Concepto
+                    </a>
+                    <button type="button" class="btn btn-info btn-sm" onclick="duplicarConcepto()">
+                        <i class="bi bi-copy me-1"></i>Duplicar Concepto
+                    </button>
+                    @if (Model.ConceptoGasto.IsActive)
+                    {
+                        <a asp-page="Delete" asp-route-id="@Model.ConceptoGasto.Id" class="btn btn-warning btn-sm">
+                            <i class="bi bi-pause-circle me-1"></i>Desactivar
+                        </a>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-success btn-sm" onclick="activarConcepto()">
+                            <i class="bi bi-play-circle me-1"></i>Activar
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function duplicarConcepto() {
+            if (confirm('¿Deseas crear una copia de este concepto?')) {
+                window.location.href = '@Url.Page("Create")?duplicateFrom=@Model.ConceptoGasto.Id';
+            }
+        }
+        
+        function activarConcepto() {
+            if (confirm('¿Deseas activar este concepto?')) {
+                // Implementar activación via AJAX
+                fetch(`?handler=Activate&id=@Model.ConceptoGasto.Id`, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    }
+                });
+            }
+        }
+    </script>
+}

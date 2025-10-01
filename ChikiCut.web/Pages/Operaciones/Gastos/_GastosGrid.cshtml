@@ -1,0 +1,83 @@
+@model IEnumerable<ChikiCut.web.Pages.Operaciones.Gastos.GastoGridRowVm>
+@using System.Globalization
+@if (Model != null && Model.Any())
+{
+    <div class="table-responsive mt-4">
+        <table class="table table-hover table-bordered table-striped align-middle shadow-sm rounded" id="gastos-grid">
+            <thead class="table-dark">
+                <tr>
+                    <th class="text-center">Sucursal</th>
+                    <th class="text-center">Concepto</th>
+                    <th class="text-end">Monto</th>
+                    <th class="text-center">Método de Pago</th>
+                    <th class="text-center">Descripción</th>
+                    <th class="text-center">Observaciones</th>
+                    <th class="text-center">Comprobante</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var g in Model)
+                {
+                    <tr data-gasto-id="@g.Id">
+                        <td data-col="sucursal" class="text-center fw-semibold">@g.SucursalNombre</td>
+                        <td data-col="concepto" class="text-center">@g.ConceptoNombre</td>
+                        <td data-col="monto" class="text-end text-primary">@g.Monto.ToString("C", CultureInfo.GetCultureInfo("es-MX"))</td>
+                        <td data-col="metodo" class="text-center">@g.MetodoPago</td>
+                        <td data-col="descripcion" class="text-center">@g.Descripcion</td>
+                        <td data-col="observaciones" class="text-center">@g.Observaciones</td>
+                        <td class="text-center">
+                            @if (!string.IsNullOrEmpty(g.ComprobanteUrl))
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-info btn-ver-comprobante" data-url="@g.ComprobanteUrl" title="Ver comprobante">
+                                    <i class="bi bi-eye"></i> Ver
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Sin comprobante">
+                                    <i class="bi bi-eye-slash"></i> Sin comprobante
+                                </button>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary btn-editar-gasto" title="Editar" data-gasto-id="@g.Id">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-gasto" title="Eliminar" data-gasto-id="@g.Id">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="alert alert-info text-end fw-bold mt-2 d-flex justify-content-between align-items-center">
+            <span>Total de registros: @Model.Count()</span>
+            <span>Total de gastos capturados: @Model.Sum(g => g.Monto).ToString("C", CultureInfo.GetCultureInfo("es-MX"))</span>
+        </div>
+    </div>
+}
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const grid = document.getElementById('gastos-grid');
+            grid?.addEventListener('click', (ev) => {
+                const btn = ev.target.closest('.btn-editar-gasto');
+                if (btn && grid.contains(btn)) {
+                    const id = Number(btn.dataset.gastoId);
+                    cargarDatosGasto(id);
+                }
+                const btnVer = ev.target.closest('.btn-ver-comprobante');
+                if (btnVer && grid.contains(btnVer)) {
+                    const url = btnVer.getAttribute('data-url');
+                    if (url) {
+                        window.open(url, '_blank');
+                    }
+                }
+            });
+        });
+    </script>
+}

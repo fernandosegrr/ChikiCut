@@ -1,0 +1,25 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+# Logs
+*.log
+# OS
+.DS_Store
+Thumbs.db
+# Rider
+.idea/
+*.sln.iml
+# Visual Studio Code
+.vscode/
+# NuGet
+*.nupkg
+# Others
+*.db
+*.sqlite
+appsettings.*.json
+!appsettings.json

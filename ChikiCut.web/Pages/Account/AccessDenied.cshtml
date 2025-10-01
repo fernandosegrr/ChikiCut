@@ -1,0 +1,186 @@
+@page
+@model ChikiCut.web.Pages.Account.AccessDeniedModel
+@{
+    ViewData["Title"] = "Acceso Denegado";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <div class="card border-danger shadow-lg">
+                <div class="card-header bg-danger text-white">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-shield-exclamation display-6 me-3"></i>
+                        <div>
+                            <h3 class="mb-0">Acceso Denegado</h3>
+                            <small>No tienes permisos para realizar esta acción</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Permisos insuficientes:</strong> Tu rol actual no incluye los permisos necesarios para esta acción.
+                    </div>
+
+                    <!-- Información detallada -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-person-circle me-2"></i>Tu información actual:</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Rol:</strong> @Model.UserRole</li>
+                                <li><strong>Usuario:</strong> @Model.UserEmail</li>
+                                @if (Model.PermissionSummary != null)
+                                {
+                                    <li><strong>Módulos con acceso:</strong> @Model.PermissionSummary.AccessibleModulesCount de @Model.PermissionSummary.TotalModules</li>
+                                }
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-shield-check me-2"></i>Acción solicitada:</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Módulo:</strong> @Model.Module?.ToUpper()</li>
+                                <li><strong>Acción:</strong> @Model.Action?.ToUpper()</li>
+                                <li><strong>Permiso requerido:</strong> 
+                                    <span class="badge bg-danger">
+                                        @Model.RequiredPermission
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Explicación de la acción -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6><i class="bi bi-info-circle me-2"></i>¿Qué intentabas hacer?</h6>
+                            <p class="mb-0">
+                                Intentabas: <strong>@Model.RequiredPermission</strong>
+                            </p>
+                            <small class="text-muted">
+                                Esta acción requiere permisos específicos configurados en tu rol actual.
+                            </small>
+                        </div>
+                    </div>
+
+                    @if (Model.HasRelatedPermissions)
+                    {
+                        <!-- Acciones alternativas disponibles -->
+                        <div class="card bg-success bg-opacity-10 border-success mb-4">
+                            <div class="card-body">
+                                <h6><i class="bi bi-check-circle me-2 text-success"></i>Lo que SÍ puedes hacer:</h6>
+                                @if (Model.AlternativeActions.Any())
+                                {
+                                    <ul class="mb-0">
+                                        @foreach (var action in Model.AlternativeActions)
+                                        {
+                                            <li class="text-success">@action</li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <p class="mb-0 text-success">Tienes algunos permisos en este módulo, pero no para esta acción específica.</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Sin permisos en el módulo -->
+                        <div class="card bg-warning bg-opacity-10 border-warning mb-4">
+                            <div class="card-body">
+                                <h6><i class="bi bi-exclamation-triangle me-2 text-warning"></i>Sin acceso al módulo</h6>
+                                <p class="mb-0 text-warning">
+                                    Tu rol actual no incluye permisos para el módulo de <strong>@Model.Module</strong>.
+                                    Para acceder a este módulo, necesitas que un administrador actualice tus permisos.
+                                </p>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Información sobre permisos -->
+                    <div class="mb-4">
+                        <h6><i class="bi bi-info-circle me-2"></i>¿Cómo funcionan los permisos en ChikiCut?</h6>
+                        <div class="row small">
+                            <div class="col-md-6">
+                                <ul>
+                                    <li><strong>Basados en configuración:</strong> Cada rol tiene permisos específicos configurados</li>
+                                    <li><strong>Granulares:</strong> Se asignan por módulo y acción individual</li>
+                                    <li><strong>Personalizables:</strong> Los administradores pueden ajustar cada permiso</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul>
+                                    <li><strong>Sin bypass:</strong> Todos los roles respetan su configuración exacta</li>
+                                    <li><strong>Auditables:</strong> Todos los intentos se registran</li>
+                                    <li><strong>Flexibles:</strong> Se adaptan a cualquier estructura organizacional</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        @if (Model.PermissionSummary?.ModulesWithAccess.Any() == true)
+                        {
+                            <div class="mt-3">
+                                <h6>Módulos a los que SÍ tienes acceso:</h6>
+                                <div class="d-flex flex-wrap gap-1">
+                                    @foreach (var module in Model.PermissionSummary.ModulesWithAccess)
+                                    {
+                                        <span class="badge bg-success">@module</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-person-gear me-2"></i>¿Necesitas más permisos?</h6>
+                            <p class="small text-muted">Contacta a tu administrador para solicitar los permisos necesarios.</p>
+                            <ul class="small">
+                                <li><strong>Email:</strong> admin@chikicut.com</li>
+                                <li><strong>Teléfono:</strong> (55) 1234-5678</li>
+                                <li><strong>Especifica:</strong> Qué permiso necesitas y para qué</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-arrow-return-left me-2"></i>¿Qué puedes hacer ahora?</h6>
+                            <div class="d-grid gap-2">
+                                @if (!string.IsNullOrEmpty(Model.ReturnUrl))
+                                {
+                                    <a href="@Model.ReturnUrl" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-arrow-left me-1"></i>Volver a la página anterior
+                                    </a>
+                                }
+                                <a asp-page="/Index" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-house me-1"></i>Ir al inicio
+                                </a>
+                                <a asp-page="/Account/Profile" class="btn btn-outline-info btn-sm">
+                                    <i class="bi bi-person-circle me-1"></i>Ver mi perfil
+                                </a>
+                                @if (Model.HasRelatedPermissions)
+                                {
+                                    <a href="/@Model.Module" class="btn btn-outline-success btn-sm">
+                                        <i class="bi bi-arrow-right me-1"></i>Ver qué sí puedo hacer
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="text-center mt-4">
+                <small class="text-muted">
+                    <i class="bi bi-shield-check me-1"></i>
+                    Esta página se muestra por motivos de seguridad. Todas las acciones son registradas.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>

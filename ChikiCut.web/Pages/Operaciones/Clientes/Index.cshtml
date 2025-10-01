@@ -1,0 +1,200 @@
+@page
+@model ChikiCut.web.Pages.Operaciones.Clientes.IndexModel
+@{
+    ViewData["Title"] = "Gestión de Clientes";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1><i class="bi bi-person-hearts me-2"></i>Gestión de Clientes</h1>
+            <p class="text-muted">Administra la base de datos de clientes de la sucursal</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" role="group">
+                <a asp-page="Create" class="btn btn-success">
+                    <i class="bi bi-person-plus me-1"></i>Nuevo Cliente
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas Rápidas -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-people display-6 mb-2"></i>
+                <h3 class="card-title">@Model.Clientes.Count</h3>
+                <p class="card-text mb-0">Total Clientes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-person-plus display-6 mb-2"></i>
+                <h3 class="card-title">0</h3>
+                <p class="card-text mb-0">Nuevos este Mes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar-check display-6 mb-2"></i>
+                <h3 class="card-title">0</h3>
+                <p class="card-text mb-0">Citas Hoy</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-warning text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-star display-6 mb-2"></i>
+                <h3 class="card-title">0</h3>
+                <p class="card-text mb-0">Clientes VIP</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros y Búsqueda -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-funnel me-2"></i><strong>Filtros y Búsqueda</strong>
+    </div>
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Búsqueda</label>
+                    <input type="text" name="Search" value="@Model.Search" class="form-control" placeholder="Nombre, teléfono, email...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Estado</label>
+                    <select name="Estado" class="form-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.Estado))">Todos</option>
+                        <option value="Activos" selected="@(Model.Estado == "Activos")">Activos</option>
+                        <option value="Inactivos" selected="@(Model.Estado == "Inactivos")">Inactivos</option>
+                        <option value="VIP" selected="@(Model.Estado == "VIP")">VIP</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Registrados</label>
+                    <select name="Registrados" class="form-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.Registrados))">Cualquier fecha</option>
+                        <option value="Semana" selected="@(Model.Registrados == "Semana")">Última semana</option>
+                        <option value="Mes" selected="@(Model.Registrados == "Mes")">Último mes</option>
+                        <option value="Año" selected="@(Model.Registrados == "Año")">Último año</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i>Buscar
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <a href="@Url.Page("/Operaciones/Clientes/Index")" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de Clientes -->
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-list me-2"></i><strong>Lista de Clientes</strong>
+        <span class="badge bg-primary ms-2">@Model.Clientes.Count clientes registrados</span>
+    </div>
+    <div class="card-body">
+        @if (Model.Clientes.Count == 0)
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-person-hearts display-1 text-muted mb-3"></i>
+                <h4 class="text-muted">No hay clientes registrados</h4>
+                <a asp-page="Create" class="btn btn-success mt-3">
+                    <i class="bi bi-person-plus me-1"></i>Registrar Cliente
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var cliente in Model.Clientes)
+                        {
+                            <tr>
+                                <td>@cliente.NombreCompleto</td>
+                                <td>@cliente.Email</td>
+                                <td>@cliente.Telefono</td>
+                                <td>
+                                    @if (cliente.IsActive)
+                                    {
+                                        <span class="badge bg-success">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactivo</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-page="Details" asp-route-id="@cliente.Id" class="btn btn-info btn-sm me-1"><i class="bi bi-eye"></i></a>
+                                    <a asp-page="Edit" asp-route-id="@cliente.Id" class="btn btn-warning btn-sm me-1"><i class="bi bi-pencil"></i></a>
+                                    <a asp-page="Delete" asp-route-id="@cliente.Id" class="btn btn-danger btn-sm me-1"><i class="bi bi-trash"></i></a>
+                                    @if (!cliente.IsActive)
+                                    {
+                                        <form method="post" asp-page-handler="Activar" asp-route-id="@cliente.Id" style="display:inline">
+                                            <button type="submit" class="btn btn-success btn-sm" title="Activar"><i class="bi bi-check-circle"></i></button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var estadoSelect = document.querySelector('select[name="Estado"]');
+            if (estadoSelect) {
+                estadoSelect.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            }
+            var registradosSelect = document.querySelector('select[name="Registrados"]');
+            if (registradosSelect) {
+                registradosSelect.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            }
+        });
+    </script>
+}

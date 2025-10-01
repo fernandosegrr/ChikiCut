@@ -1,0 +1,25 @@
+@page
+@model TestHandlerModel
+@{
+    ViewData["Title"] = "Test Handler";
+}
+
+<h2>Test Handler</h2>
+<p>Esta página es para probar handlers POST personalizados en Razor Pages.</p>
+<button id="testBtn" class="btn btn-primary">Probar Handler POST</button>
+<pre id="result"></pre>
+
+@section Scripts {
+<script>
+document.getElementById('testBtn').onclick = function() {
+    fetch('TestHandler?handler=TestPost', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(err => {
+            document.getElementById('result').textContent = 'ERROR: ' + err;
+        });
+};
+</script>
+}

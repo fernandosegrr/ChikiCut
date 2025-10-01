@@ -1,0 +1,615 @@
+@page
+@model ChikiCut.web.Pages.Operaciones.PuntoVenta.IndexModel
+@{
+    ViewData["Title"] = "Punto de Venta";
+    var servicioEmojis = new[] { "✂️", "👧", "✨", "👑", "🧚‍♀️", "🌟", "💅", "🦶", "😊", "🎨" };
+    var productoEmojis = new[] { "💧", "🧴", "🖌️", "💨", "💦", "😎", "⭐", "✂️", "🖌️", "🌪️", "🧢", "🎁", "🦄", "🧼", "🧴" };
+    var usuario = !string.IsNullOrWhiteSpace(Model.UsuarioNombre) ? Model.UsuarioNombre : (User.Identity?.Name ?? "Usuario");
+    var sucursal = !string.IsNullOrWhiteSpace(Model.SucursalActual) ? Model.SucursalActual : "Sucursal";
+    var fecha = DateTime.Now.ToString("dd 'de' MMMM 'de' yyyy");
+    var ticket = Guid.NewGuid().ToString()[^8..].ToUpper();
+    var clientesJson = System.Text.Json.JsonSerializer.Serialize(Model.Clientes.Select(c => c.NombreCompleto));
+    var promos = new[] {
+        new { Nombre = "Miércoles de Bebés", Descripcion = "Precio especial menores de 1 año", Monto = 100 },
+        new { Nombre = "Martes School Club", Descripcion = "Precio especial a Escuelas afiliadas", Monto = 120 },
+        new { Nombre = "Cumpleaños", Descripcion = "Precio especial en tu cumple", Monto = 120 },
+        new { Nombre = "2 Hermanos", Descripcion = "2 hermanos juntos", Monto = 250 },
+        new { Nombre = "3 Hermanos", Descripcion = "3 hermanos juntos", Monto = 350 }
+    };
+    var promosJson = System.Text.Json.JsonSerializer.Serialize(promos);
+    var sucursalesJson = System.Text.Json.JsonSerializer.Serialize(Model.SucursalesUsuario.Select(s => new { s.Id, s.Name }));
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/punto-venta.css" />
+    <style>
+        .pv-info-bar {
+            background: #fffbe7;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #0001;
+            padding: 0.7em 1.2em;
+            margin-bottom: 1.2em;
+            font-size: 1.08em;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1.5em;
+        }
+        .pv-info-bar .pv-info-label {
+            font-weight: 600;
+            margin-right: 0.3em;
+        }
+        .pv-info-bar .pv-info-emoji {
+            font-size: 1.2em;
+            margin-right: 0.2em;
+        }
+        .pv-info-bar .pv-info-time {
+            font-variant-numeric: tabular-nums;
+            font-family: monospace;
+            font-size: 1.1em;
+            color: #e67e22;
+            min-width: 90px;
+        }
+        .pv-info-bar .pv-sucursal-label {
+            background: linear-gradient(90deg, #1976d2 60%, #64b5f6 100%);
+            color: #fff;
+            border-radius: 8px;
+            padding: 0.18em 1.1em 0.18em 0.9em;
+            font-weight: 700;
+            font-size: 1.13em;
+            margin: 0 0.3em;
+            box-shadow: 0 2px 8px #1976d233;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            border: 2px solid #1565c0;
+            transition: box-shadow 0.2s;
+        }
+        .pv-info-bar .pv-sucursal-label:hover {
+            box-shadow: 0 4px 16px #1976d255;
+        }
+        .autocomplete-suggestions {
+            position: absolute;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 8px #0001;
+            z-index: 1000;
+            width: 100%;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .autocomplete-suggestion {
+            padding: 0.5em 1em;
+            cursor: pointer;
+        }
+        .autocomplete-suggestion:hover, .autocomplete-suggestion.active {
+            background: #e3f2fd;
+        }
+        .pv-promos-section {
+            background: #f3f8ff;
+            border-radius: 12px;
+            padding: 1em;
+            margin-bottom: 1em;
+            box-shadow: 0 2px 8px #e3f2fd;
+        }
+        .pv-promos-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.7em;
+        }
+        .pv-promo-btn {
+            background: #fff;
+            border: 2px solid #90caf9;
+            border-radius: 10px;
+            padding: 0.7em 1.2em;
+            font-weight: 600;
+            color: #1976d2;
+            cursor: pointer;
+            transition: background 0.15s, border 0.15s;
+            min-width: 170px;
+            text-align: left;
+        }
+        .pv-promo-btn.selected, .pv-promo-btn:focus {
+            background: #e3f2fd;
+            border-color: #1976d2;
+            color: #0d47a1;
+        }
+        .pv-promo-desc {
+            font-size: 0.95em;
+            color: #888;
+        }
+        .pv-promos-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5em;
+        }
+        .pv-promo-chip {
+            display: inline-flex;
+            align-items: center;
+            background: #fff;
+            border: 1.5px solid #90caf9;
+            border-radius: 999px;
+            padding: 0.35em 1em 0.35em 0.8em;
+            font-size: 1em;
+            font-weight: 600;
+            color: #1976d2;
+            cursor: pointer;
+            transition: background 0.15s, border 0.15s, color 0.15s;
+            min-width: 0;
+            max-width: 100%;
+            white-space: nowrap;
+        }
+        .pv-promo-chip.selected, .pv-promo-chip:focus {
+            background: #e3f2fd;
+            border-color: #1976d2;
+            color: #0d47a1;
+        }
+        .pv-promo-chip-monto {
+            background: #00bcd4;
+            color: #fff;
+            border-radius: 999px;
+            font-size: 0.95em;
+            font-weight: 700;
+            padding: 0.15em 0.7em;
+            margin-left: 0.7em;
+        }
+        .pv-promo-chip-nombre {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+        .modal-sucursal-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.35); z-index: 2000; display: flex; align-items: center; justify-content: center;
+        }
+        .modal-sucursal {
+            background: #fff; border-radius: 16px; box-shadow: 0 4px 32px #0002;
+            padding: 2.2em 2.5em; min-width: 320px; max-width: 95vw;
+            text-align: center; position: relative;
+        }
+        .modal-sucursal h4 { font-weight: 700; margin-bottom: 1.2em; }
+        .modal-sucursal select {
+            font-size: 1.1em; padding: 0.5em 1em; border-radius: 8px; border: 1.5px solid #90caf9; margin-bottom: 1.5em;
+        }
+        .modal-sucursal .btn-sucursal {
+            background: #1976d2; color: #fff; border: none; border-radius: 8px; padding: 0.7em 2.2em; font-size: 1.1em; font-weight: 600;
+            transition: background 0.15s; box-shadow: 0 2px 8px #90caf9;
+        }
+        .modal-sucursal .btn-sucursal:disabled { background: #b3e5fc; color: #888; }
+        /* ... otros estilos ... */
+        .pv-btn-servicio {
+            background: linear-gradient(135deg, #e3f2fd 60%, #bbdefb 100%);
+            border: 2px solid #1976d2;
+        }
+        .pv-btn-servicio:hover, .pv-btn-servicio:focus {
+            background: linear-gradient(135deg, #bbdefb 60%, #e3f2fd 100%);
+            border-color: #0d47a1;
+        }
+        .pv-btn-producto {
+            background: linear-gradient(135deg, #f1f8e9 60%, #c8e6c9 100%);
+            border: 2px solid #388e3c;
+        }
+        .pv-btn-producto:hover, .pv-btn-producto:focus {
+            background: linear-gradient(135deg, #c8e6c9 60%, #f1f8e9 100%);
+            border-color: #1b5e20;
+        }
+        .pv-matrix-alto {
+            min-height: 520px;
+            max-height: 700px;
+            overflow-y: auto;
+        }
+        .pv-type-badge {
+            display: inline-block;
+            font-size: 0.85em;
+            font-weight: 600;
+            padding: 0.18em 0.7em;
+            border-radius: 999px;
+            margin-left: 0.5em;
+            margin-top: 0.2em;
+            vertical-align: middle;
+        }
+        .pv-type-servicio {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1.5px solid #1976d2;
+        }
+        .pv-type-producto {
+            background: #f1f8e9;
+            color: #388e3c;
+            border: 1.5px solid #388e3c;
+        }
+    </style>
+}
+@section Scripts {
+    <script src="~/js/punto-venta.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Autocomplete para clientes ---
+        let clientes = @Html.Raw(clientesJson);
+        const input = document.getElementById('pv-cliente-autocomplete');
+        const container = document.getElementById('pv-cliente-autocomplete-container');
+        let suggestionBox;
+        if (input && container) {
+            input.addEventListener('input', function() {
+                const val = this.value.toLowerCase();
+                if (suggestionBox) suggestionBox.remove();
+                if (!val) return;
+                const matches = clientes.filter(c => c.toLowerCase().includes(val));
+                suggestionBox = document.createElement('div');
+                suggestionBox.className = 'autocomplete-suggestions';
+                if (matches.length === 0) {
+                    // Opción para agregar nuevo cliente
+                    const div = document.createElement('div');
+                    div.className = 'autocomplete-suggestion';
+                    div.textContent = 'Agregar nuevo cliente';
+                    div.style.fontWeight = 'bold';
+                    div.onclick = function() {
+                        PV_abrirModalNuevoCliente(input.value);
+                        suggestionBox.remove();
+                    };
+                    suggestionBox.appendChild(div);
+                } else {
+                    matches.forEach(c => {
+                        const div = document.createElement('div');
+                        div.className = 'autocomplete-suggestion';
+                        div.textContent = c.replace(/\b\w+/g, function(w) { return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(); });
+                        div.onclick = function() {
+                            input.value = div.textContent;
+                            suggestionBox.remove();
+                        };
+                        suggestionBox.appendChild(div);
+                    });
+                }
+                container.appendChild(suggestionBox);
+            });
+            input.addEventListener('blur', function() {
+                setTimeout(() => { if (suggestionBox) suggestionBox.remove(); }, 150);
+            });
+        }
+
+        // Modal para nuevo cliente
+        window.PV_abrirModalNuevoCliente = function(nombre) {
+            document.getElementById('pv-nuevo-cliente-nombre').value = nombre || '';
+            document.getElementById('pv-nuevo-cliente-telefono').value = '';
+            document.getElementById('pv-nuevo-cliente-modal').style.display = 'block';
+        }
+        window.PV_cerrarModalNuevoCliente = function() {
+            document.getElementById('pv-nuevo-cliente-modal').style.display = 'none';
+        }
+        window.PV_guardarNuevoCliente = function() {
+            const nombre = document.getElementById('pv-nuevo-cliente-nombre').value.trim();
+            const telefono = document.getElementById('pv-nuevo-cliente-telefono').value.trim();
+            const email = document.getElementById('pv-nuevo-cliente-email').value.trim();
+            const fechaNacimiento = document.getElementById('pv-nuevo-cliente-fecha-nacimiento').value;
+            const genero = document.getElementById('pv-nuevo-cliente-genero').value;
+            const direccion = document.getElementById('pv-nuevo-cliente-direccion').value.trim();
+            const ciudad = document.getElementById('pv-nuevo-cliente-ciudad').value.trim();
+            const estado = document.getElementById('pv-nuevo-cliente-estado').value.trim();
+            const codigoPostal = document.getElementById('pv-nuevo-cliente-codigo-postal').value.trim();
+            const pais = document.getElementById('pv-nuevo-cliente-pais').value.trim();
+            const notas = document.getElementById('pv-nuevo-cliente-notas').value.trim();
+            if (!nombre) {
+                alert('El nombre es obligatorio');
+                return;
+            }
+            fetch(window.location.pathname + '?handler=AgregarCliente', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': document.querySelector('input[name=__RequestVerificationToken]').value },
+                body: JSON.stringify({ nombre, telefono, email, fechaNacimiento, genero, direccion, ciudad, estado, codigoPostal, pais, notas })
+            })
+            .then(resp => resp.json())
+            .then(data => {
+                if (data && data.ok) {
+                    input.value = nombre;
+                    PV_cerrarModalNuevoCliente();
+                    // Actualiza la lista de clientes en tiempo real
+                    clientes.push(nombre);
+                } else {
+                    alert('Error al guardar el cliente');
+                }
+            });
+        }
+
+        // --- Selección de sucursal ---
+        @if (!Model.SucursalSeleccionadaId.HasValue || Model.SucursalSeleccionadaId == 0)
+        {
+            <script>
+            mostrarModalSucursal();
+            </script>
+        }
+        function mostrarModalSucursal() {
+            document.getElementById('modal-sucursal-bg').style.display = 'flex';
+        }
+        function ocultarModalSucursal() {
+            document.getElementById('modal-sucursal-bg').style.display = 'none';
+        }
+        function setSucursal() {
+            var select = document.getElementById('modal-sucursal-select');
+            var sucursalId = select.value;
+            if (!sucursalId) { alert('Selecciona una sucursal'); return; }
+            fetch(window.location.pathname + '?handler=SetSucursal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': document.querySelector('input[name=__RequestVerificationToken]').value },
+                body: JSON.stringify({ sucursalId: parseInt(sucursalId) })
+            })
+            .then(resp => resp.json())
+            .then(data => {
+                if (data && data.ok) {
+                    location.reload();
+                } else {
+                    alert('Error al seleccionar la sucursal');
+                }
+            });
+        }
+        </script>
+    }
+}
+<form method="post">
+    @Html.AntiForgeryToken()
+</form>
+<div class="pv-info-bar mb-3">
+    <span class="pv-info-emoji">👤</span><span class="pv-info-label">Usuario:</span> @usuario
+    <span class="pv-info-emoji">🏢</span><span class="pv-info-label">Sucursal:</span>
+    @if (!Model.SucursalSeleccionadaId.HasValue || Model.SucursalSeleccionadaId == 0)
+    {
+        <button class="pv-sucursal-label" onclick="mostrarModalSucursal()">Seleccionar sucursal</button>
+    }
+    else
+    {
+        <span class="pv-sucursal-label">@sucursal</span>
+    }
+    <span class="pv-info-emoji">📅</span><span class="pv-info-label">Fecha:</span> @fecha
+    <span class="pv-info-emoji">🎟️</span><span class="pv-info-label">Ticket:</span> <span id="pv-ticket-label">por asignar</span>
+    <span class="pv-info-label">Hora:</span> <span class="pv-info-emoji">⏰</span><span id="pv-info-time" class="pv-info-time" style="display:inline;"></span>
+</div>
+@if (!Model.SucursalSeleccionadaId.HasValue || Model.SucursalSeleccionadaId == 0)
+{
+    <script>mostrarModalSucursal();</script>
+}
+<script>
+function updatePVTime() {
+    const el = document.getElementById('pv-info-time');
+    if (!el) return;
+    const now = new Date();
+    let h = now.getHours();
+    let m = now.getMinutes();
+    let s = now.getSeconds();
+    let ampm = h >= 12 ? 'p.m.' : 'a.m.';
+    h = h % 12; h = h ? h : 12;
+    el.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')} ${ampm}`;
+}
+setInterval(updatePVTime, 1000);
+document.addEventListener('DOMContentLoaded', updatePVTime);
+</script>
+@* Panel de productos y servicios con badge para distinguir tipo, sin mostrar cliente ni número de ticket hasta que se genere la venta *@
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12 col-lg-8">
+            <div class="card mb-3">
+                <div class="card-header d-flex align-items-center">
+                    <span class="me-2 pv-card-header-emoji">🛒</span><span>Productos y Servicios</span>
+                    <input id="pv-buscar-item" class="form-control form-control-sm ms-auto" style="max-width:220px;" placeholder="🔍 Buscar producto o servicio..." />
+                </div>
+                <div class="card-body">
+                    <div class="pv-matrix pv-matrix-alto" id="pv-grid-item">
+                        @{
+                            var allItems = new List<(string Nombre, decimal Precio, string Tipo, string Emoji)>();
+                            for (int i = 0; i < Model.Servicios.Count; i++)
+                            {
+                                var serv = Model.Servicios[i];
+                                var emoji = servicioEmojis.Length > i ? servicioEmojis[i] : "✂️";
+                                allItems.Add((serv.Nombre, serv.Precio, "servicio", emoji));
+                            }
+                            for (int i = 0; i < Model.Productos.Count; i++)
+                            {
+                                var prod = Model.Productos[i];
+                                var emoji = productoEmojis.Length > i ? productoEmojis[i] : "🎁";
+                                allItems.Add((prod.Nombre, prod.Precio, "producto", emoji));
+                            }
+                        }
+                        @for (int i = 0; i < allItems.Count; i++)
+                        {
+                            var item = allItems[i];
+                            <button class="pv-btn @(item.Tipo == "servicio" ? "pv-btn-servicio" : "pv-btn-producto")" onclick="PV_addItem('@item.Tipo',@i)">
+                                <span class="pv-emoji">@item.Emoji</span>
+                                <span class="pv-label">@item.Nombre</span>
+                                <span class="pv-price">$@item.Precio</span>
+                                <span class="pv-type-badge @(item.Tipo == "servicio" ? "pv-type-servicio" : "pv-type-producto")" title="@(item.Tipo == "servicio" ? "Servicio" : "Producto")">
+                                    @(item.Tipo == "servicio" ? "Servicio" : "Producto")
+                                </span>
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 col-lg-4">
+            <div class="pv-promos-section mb-3">
+                <div class="mb-2"><strong>Promociones</strong></div>
+                <div class="pv-promos-chips">
+                    @for (int i = 0; i < promos.Length; i++)
+                    {
+                        <button type="button" class="pv-promo-chip" id="pv-promo-btn-@i" onclick="seleccionarPromo(@i)" title="@promos[i].Descripcion">
+                            <span class="pv-promo-chip-nombre">@promos[i].Nombre</span>
+                            <span class="pv-promo-chip-monto">${@promos[i].Monto}</span>
+                        </button>
+                    }
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-header"><span class="pv-card-header-emoji">📝</span>Venta</div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th>Cant.</th>
+                                    <th>Precio</th>
+                                    <th>Subtotal</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="pv-visor-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-header"><span class="pv-card-header-emoji">💳</span>Cobro</div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <label for="pv-cliente-autocomplete" class="form-label">Cliente</label>
+                        <div id="pv-cliente-autocomplete-container" style="position:relative;">
+                            <input id="pv-cliente-autocomplete" class="form-control" placeholder="Buscar o escribir cliente..." autocomplete="off" />
+                        </div>
+                        <div id="pv-nuevo-cliente-modal" class="modal" tabindex="-1" style="display:none;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Agregar nuevo cliente</h5>
+                                        <button type="button" class="btn-close" onclick="PV_cerrarModalNuevoCliente()"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-2">
+                                            <label for="pv-nuevo-cliente-nombre" class="form-label">Nombre completo</label>
+                                            <input id="pv-nuevo-cliente-nombre" class="form-control" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label for="pv-nuevo-cliente-telefono" class="form-label">Teléfono</label>
+                                            <input id="pv-nuevo-cliente-telefono" class="form-control" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label for="pv-nuevo-cliente-email" class="form-label">Email</label>
+                                            <input id="pv-nuevo-cliente-email" class="form-control" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label for="pv-nuevo-cliente-fecha-nacimiento" class="form-label">Fecha de Nacimiento</label>
+                                            <input id="pv-nuevo-cliente-fecha-nacimiento" type="date" class="form-control" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label for="pv-nuevo-cliente-genero" class="form-label">Género</label>
+                                            <select id="pv-nuevo-cliente-genero" class="form-control">
+                                                <option value="">Selecciona...</option>
+                                                <option value="Femenino">Femenino</option>
+                                                <option value="Masculino">Masculino</option>
+                                                <option value="Otro">Otro</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label for="pv-nuevo-cliente-direccion" class="form-label">Dirección</label>
+                                            <input id="pv-nuevo-cliente-direccion" class="form-control" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label for="pv-nuevo-cliente-ciudad" class="form-label">Ciudad</label>
+                                            <input id="pv-nuevo-cliente-ciudad" class="form-control" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label for="pv-nuevo-cliente-estado" class="form-label">Estado</label>
+                                            <input id="pv-nuevo-cliente-estado" class="form-control" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label for="pv-nuevo-cliente-codigo-postal" class="form-label">Código Postal</label>
+                                            <input id="pv-nuevo-cliente-codigo-postal" class="form-control" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label for="pv-nuevo-cliente-pais" class="form-label">País</label>
+                                            <input id="pv-nuevo-cliente-pais" class="form-control" value="México" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label for="pv-nuevo-cliente-notas" class="form-label">Notas</label>
+                                            <textarea id="pv-nuevo-cliente-notas" class="form-control"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" onclick="PV_cerrarModalNuevoCliente()">Cancelar</button>
+                                        <button type="button" class="btn btn-primary" onclick="PV_guardarNuevoCliente()">Guardar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-2 d-flex flex-wrap gap-2">
+                        @for (int i = 0; i < Model.MetodosPago.Count; i++)
+                        {
+                            var emoji = i == 0 ? "💵" : i == 1 ? "💳" : "🏦";
+                            <button type="button" class="btn btn-outline-dark flex-fill" style="min-width:110px;" onclick="PV_addPago('@Model.MetodosPago[i]')">
+                                <span class="pv-emoji">@emoji</span><br />@Model.MetodosPago[i]
+                            </button>
+                        }
+                        <button type="button" class="btn btn-warning flex-fill" style="min-width:110px;" onclick="PV_addPago('Otro')">
+                            <span class="pv-emoji">➕</span><br />Agregar otro pago
+                        </button>
+                    </div>
+                    <div class="mb-2">
+                        <span class="pv-info-label">Descuento por promoción:</span> <span id="pv-descuento">$0.00</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="pv-info-label">Total final:</span> <span id="pv-total-final">$0.00</span>
+                    </div>
+                    <div id="pv-pagos-list"></div>
+                    <div class="mt-2 small text-muted">Restante por cobrar: <span id="pv-restante">$0.00</span></div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <button class="btn btn-primary btn-lg"><span class="pv-emoji">💰</span>Cobrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+// Búsqueda unificada de productos y servicios
+function PV_buscar() {
+    var val = document.getElementById('pv-buscar-item').value.toLowerCase();
+    var grid = document.getElementById('pv-grid-item');
+    var buttons = grid.querySelectorAll('button');
+    buttons.forEach(function(btn) {
+        var nombre = btn.querySelector('.pv-label').textContent.toLowerCase();
+        btn.style.display = nombre.includes(val) ? '' : 'none';
+    });
+}
+document.getElementById('pv-buscar-item').addEventListener('input', PV_buscar);
+document.addEventListener('DOMContentLoaded', PV_buscar);
+</script>
+@if (!Model.SucursalSeleccionadaId.HasValue || Model.SucursalSeleccionadaId == 0)
+{
+    <div id="modal-sucursal-bg" class="modal-sucursal-bg" style="display:flex;">
+        <div class="modal-sucursal">
+            <h4>Selecciona una sucursal</h4>
+            <select id="modal-sucursal-select" class="form-control">
+                <option value="">-- Selecciona --</option>
+                @foreach (var suc in Model.SucursalesUsuario)
+                {
+                    <option value="@suc.Id">@suc.Name</option>
+                }
+            </select>
+            <br />
+            <button class="btn-sucursal" onclick="setSucursal()" id="btn-modal-sucursal">Seleccionar</button>
+        </div>
+    </div>
+    <script>
+    function mostrarModalSucursal() {
+        document.getElementById('modal-sucursal-bg').style.display = 'flex';
+    }
+    function ocultarModalSucursal() {
+        document.getElementById('modal-sucursal-bg').style.display = 'none';
+    }
+    function setSucursal() {
+        var select = document.getElementById('modal-sucursal-select');
+        var sucursalId = select.value;
+        if (!sucursalId) { alert('Selecciona una sucursal'); return; }
+        fetch(window.location.pathname + '?handler=SetSucursal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': document.querySelector('input[name=__RequestVerificationToken]').value },
+            body: JSON.stringify({ sucursalId: parseInt(sucursalId) })
+        })
+        .then(resp => resp.json())
+        .then(data => {
+            if (data && data.ok) {
+                location.reload();
+            } else {
+                alert('Error al seleccionar la sucursal');
+            }
+        });
+    }
+    </script>
+}

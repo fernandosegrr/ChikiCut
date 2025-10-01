@@ -1,0 +1,262 @@
+@page
+@model ChikiCut.web.Pages.Usuarios.IndexModel
+@{
+    ViewData["Title"] = "Usuarios";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1><i class="bi bi-people-fill me-2"></i>Gestión de Usuarios</h1>
+            <p class="text-muted mb-0">Administra las cuentas de usuario del sistema</p>
+        </div>
+        <div class="col-auto">
+            <a asp-page="Create" class="btn btn-success">
+                <i class="bi bi-plus-circle me-1"></i>Nuevo Usuario
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Filtros -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="btn-group" role="group">
+            <input type="radio" class="btn-check" name="filtroEstado" id="filtroTodos" value="todos" checked>
+            <label class="btn btn-outline-secondary" for="filtroTodos">
+                <i class="bi bi-list me-1"></i>Todos (@Model.TotalUsuarios)
+            </label>
+            
+            <input type="radio" class="btn-check" name="filtroEstado" id="filtroActivos" value="activos">
+            <label class="btn btn-outline-success" for="filtroActivos">
+                <i class="bi bi-check-circle me-1"></i>Activos (@Model.UsuariosActivos)
+            </label>
+            
+            <input type="radio" class="btn-check" name="filtroEstado" id="filtroBloqueados" value="bloqueados">
+            <label class="btn btn-outline-warning" for="filtroBloqueados">
+                <i class="bi bi-lock me-1"></i>Bloqueados (@Model.UsuariosBloqueados)
+            </label>
+            
+            <input type="radio" class="btn-check" name="filtroEstado" id="filtroInactivos" value="inactivos">
+            <label class="btn btn-outline-danger" for="filtroInactivos">
+                <i class="bi bi-x-circle me-1"></i>Inactivos (@(Model.TotalUsuarios - Model.UsuariosActivos - Model.UsuariosBloqueados))
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas rápidas -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-people-fill display-4"></i>
+                <h3 class="mt-2">@Model.TotalUsuarios</h3>
+                <p class="mb-0">Total Usuarios</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-check-circle display-4"></i>
+                <h3 class="mt-2">@Model.UsuariosActivos</h3>
+                <p class="mb-0">Usuarios Activos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-lock display-4"></i>
+                <h3 class="mt-2">@Model.UsuariosBloqueados</h3>
+                <p class="mb-0">Usuarios Bloqueados</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-shield-check display-4"></i>
+                <h3 class="mt-2">@Model.Usuarios.Select(u => u.RolId).Distinct().Count()</h3>
+                <p class="mb-0">Roles en Uso</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-list-ul me-2"></i><strong>Lista de Usuarios</strong>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Código</th>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th class="d-none d-md-table-cell">Sucursal</th>
+                        <th class="d-none d-lg-table-cell">Último Acceso</th>
+                        <th>Estado</th>
+                        <th width="150px">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var usuario in Model.Usuarios)
+                    {
+                        <tr data-usuario="@usuario.Id" 
+                            data-activo="@usuario.IsActive.ToString().ToLower()"
+                            data-bloqueado="@usuario.EstaBloqueado.ToString().ToLower()">
+                            <td>
+                                <span class="badge bg-secondary">@usuario.CodigoUsuario</span>
+                            </td>
+                            <td>
+                                <div class="fw-bold">@usuario.NombreCompleto</div>
+                                <small class="text-muted">@usuario.Empleado.PuestoNavegacion?.Nombre</small>
+                            </td>
+                            <td>
+                                <i class="bi bi-envelope me-1"></i>@usuario.Email
+                            </td>
+                            <td>
+                                <span class="badge @(usuario.Rol.NivelAcceso switch 
+                                {
+                                    5 => "bg-danger",
+                                    4 => "bg-warning", 
+                                    3 => "bg-info",
+                                    2 => "bg-primary",
+                                    1 => "bg-secondary",
+                                    _ => "bg-dark"
+                                })">
+                                    @usuario.Rol.Nombre
+                                </span>
+                            </td>
+                            <td class="d-none d-md-table-cell">
+                                <small>@usuario.SucursalNombre</small>
+                            </td>
+                            <td class="d-none d-lg-table-cell">
+                                @if (usuario.UltimoAcceso.HasValue)
+                                {
+                                    <small>@usuario.UltimoAcceso.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                                }
+                                else
+                                {
+                                    <small class="text-muted">Nunca</small>
+                                }
+                            </td>
+                            <td>
+                                @if (usuario.EstaBloqueado)
+                                {
+                                    <span class="badge bg-warning">
+                                        <i class="bi bi-lock me-1"></i>Bloqueado
+                                    </span>
+                                }
+                                else if (usuario.IsActive)
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle me-1"></i>Activo
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-x-circle me-1"></i>Inactivo
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a asp-page="Details" asp-route-id="@usuario.Id" 
+                                       class="btn btn-sm btn-outline-info" title="Ver detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-page="Edit" asp-route-id="@usuario.Id" 
+                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    @if (usuario.EstaBloqueado)
+                                    {
+                                        <a asp-page="Unlock" asp-route-id="@usuario.Id" 
+                                           class="btn btn-sm btn-outline-success" title="Desbloquear usuario">
+                                            <i class="bi bi-unlock"></i>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-page="Delete" asp-route-id="@usuario.Id" 
+                                           class="btn btn-sm @(usuario.IsActive ? "btn-outline-warning" : "btn-outline-success")" 
+                                           title="@(usuario.IsActive ? "Desactivar usuario" : "Reactivar usuario")">
+                                            <i class="bi @(usuario.IsActive ? "bi-person-x" : "bi-person-check")"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Usuarios.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <i class="bi bi-people-fill display-4 text-muted d-block mb-3"></i>
+                                <h5 class="text-muted">No hay usuarios registrados</h5>
+                                <p class="text-muted">Comienza creando tu primer usuario</p>
+                                <a asp-page="Create" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-1"></i>Crear Usuario
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Script para filtrar usuarios por estado
+        document.addEventListener('DOMContentLoaded', function() {
+            const filtros = document.querySelectorAll('input[name="filtroEstado"]');
+            const filas = document.querySelectorAll('tbody tr[data-usuario]');
+
+            filtros.forEach(filtro => {
+                filtro.addEventListener('change', function() {
+                    const filtroSeleccionado = this.value;
+                    
+                    filas.forEach(fila => {
+                        const esActivo = fila.getAttribute('data-activo') === 'true';
+                        const estaBloqueado = fila.getAttribute('data-bloqueado') === 'true';
+                        let mostrar = false;
+                        
+                        switch(filtroSeleccionado) {
+                            case 'todos':
+                                mostrar = true;
+                                break;
+                            case 'activos':
+                                mostrar = esActivo && !estaBloqueado;
+                                break;
+                            case 'bloqueados':
+                                mostrar = estaBloqueado;
+                                break;
+                            case 'inactivos':
+                                mostrar = !esActivo && !estaBloqueado;
+                                break;
+                        }
+                        
+                        fila.style.display = mostrar ? '' : 'none';
+                    });
+                });
+            });
+        });
+    </script>
+}

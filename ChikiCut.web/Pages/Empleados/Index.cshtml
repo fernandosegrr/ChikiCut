@@ -1,0 +1,223 @@
+@page
+@model ChikiCut.web.Pages.Empleados.IndexModel
+@{
+    ViewData["Title"] = "Empleados";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1><i class="bi bi-people me-2"></i>Gestión de Empleados</h1>
+            <p class="text-muted mb-0">
+                @if (Model.TieneAccesoGlobal)
+                {
+                    <text>Administra el personal de todas las sucursales</text>
+                }
+                else
+                {
+                    <text>Empleados de tus sucursales: @string.Join(", ", Model.SucursalesUsuario)</text>
+                }
+            </p>
+        </div>
+        <div class="col-auto">
+            <a asp-page="Create" class="btn btn-success">
+                <i class="bi bi-plus-circle me-1"></i>Nuevo Empleado
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Información de filtrado por sucursal -->
+@if (!Model.TieneAccesoGlobal)
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Vista filtrada:</strong> Solo se muestran empleados de las sucursales: 
+        @foreach (var sucursal in Model.SucursalesUsuario)
+        {
+            <span class="badge bg-primary me-1">@sucursal</span>
+        }
+    </div>
+}
+
+<!-- Agregar después del header, antes de las estadísticas -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="btn-group" role="group">
+            <input type="radio" class="btn-check" name="filtroEstado" id="filtroTodos" value="todos" checked>
+            <label class="btn btn-outline-secondary" for="filtroTodos">
+                <i class="bi bi-people me-1"></i>Todos (@Model.TotalEmpleados)
+            </label>
+            
+            <input type="radio" class="btn-check" name="filtroEstado" id="filtroActivos" value="activos">
+            <label class="btn btn-outline-success" for="filtroActivos">
+                <i class="bi bi-person-check me-1"></i>Activos (@Model.EmpleadosActivos)
+            </label>
+            
+            <input type="radio" class="btn-check" name="filtroEstado" id="filtroInactivos" value="inactivos">
+            <label class="btn btn-outline-danger" for="filtroInactivos">
+                <i class="bi bi-person-dash me-1"></i>Inactivos (@(Model.TotalEmpleados - Model.EmpleadosActivos))
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas rápidas -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-people display-4"></i>
+                <h3 class="mt-2">@Model.TotalEmpleados</h3>
+                <p class="mb-0">Total Empleados</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-person-check display-4"></i>
+                <h3 class="mt-2">@Model.EmpleadosActivos</h3>
+                <p class="mb-0">Empleados Activos</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-list-ul me-2"></i><strong>Lista de Empleados</strong>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Código</th>
+                        <th>Empleado</th>
+                        <th>Puesto</th>
+                        <th class="d-none d-md-table-cell">Sucursal</th>
+                        <th class="d-none d-lg-table-cell">Teléfono</th>
+                        <th class="d-none d-lg-table-cell">Fecha Ingreso</th>
+                        <th>Estado</th>
+                        <th width="150px">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var empleado in Model.Empleados)
+                    {
+                        <tr data-empleado="@empleado.Id" data-activo="@empleado.IsActive.ToString().ToLower()">
+                            <td>
+                                <span class="badge bg-secondary">@empleado.CodigoEmpleado</span>
+                            </td>
+                            <td>
+                                <div class="fw-bold">@empleado.NombreCompleto</div>
+                                @if (!string.IsNullOrEmpty(empleado.Alias))
+                                {
+                                    <small class="text-muted">(@empleado.Alias)</small>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge bg-info">@empleado.PuestoNombre</span>
+                            </td>
+                            <td class="d-none d-md-table-cell">
+                                <small>@empleado.Sucursal.Name</small>
+                            </td>
+                            <td class="d-none d-lg-table-cell">
+                                <i class="bi bi-telephone me-1"></i>@empleado.Telefono
+                            </td>
+                            <td class="d-none d-lg-table-cell">
+                                <small>@empleado.FechaIngreso.ToString("dd/MM/yyyy")</small>
+                            </td>
+                            <td>
+                                <span class="badge @(empleado.IsActive ? "bg-success" : "bg-danger")">
+                                    @(empleado.IsActive ? "Activo" : "Inactivo")
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a asp-page="Details" asp-route-id="@empleado.Id" 
+                                       class="btn btn-sm btn-outline-info" title="Ver detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-page="Edit" asp-route-id="@empleado.Id" 
+                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-page="Delete" asp-route-id="@empleado.Id" 
+                                       class="btn btn-sm @(empleado.IsActive ? "btn-outline-warning" : "btn-outline-success")" 
+                                       title="@(empleado.IsActive ? "Desactivar empleado" : "Reactivar empleado")">
+                                        <i class="bi @(empleado.IsActive ? "bi-person-dash" : "bi-person-check")"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Empleados.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <i class="bi bi-people display-4 text-muted d-block mb-3"></i>
+                                <h5 class="text-muted">No hay empleados registrados</h5>
+                                <p class="text-muted">Comienza agregando tu primer empleado</p>
+                                <a asp-page="Create" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-1"></i>Agregar Empleado
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<ul class="mt-4">
+    <li class="mb-2">
+        <i class="bi bi-check-circle text-success me-2"></i>
+        <strong>Gestión de Empleados:</strong> Completado
+    </li>
+</ul>
+
+@section Scripts {
+    <script>
+        // Script para filtrar empleados por estado
+        document.addEventListener('DOMContentLoaded', function() {
+            const filtros = document.querySelectorAll('input[name="filtroEstado"]');
+            const filas = document.querySelectorAll('tbody tr[data-empleado]');
+
+            filtros.forEach(filtro => {
+                filtro.addEventListener('change', function() {
+                    const filtroSeleccionado = this.value;
+                    
+                    filas.forEach(fila => {
+                        const esActivo = fila.getAttribute('data-activo') === 'true';
+                        let mostrar = false;
+                        
+                        switch(filtroSeleccionado) {
+                            case 'todos':
+                                mostrar = true;
+                                break;
+                            case 'activos':
+                                mostrar = esActivo;
+                                break;
+                            case 'inactivos':
+                                mostrar = !esActivo;
+                                break;
+                        }
+                        
+                        fila.style.display = mostrar ? '' : 'none';
+                    });
+                });
+            });
+        });
+    </script>
+}

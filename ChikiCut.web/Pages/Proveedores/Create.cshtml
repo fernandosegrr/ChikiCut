@@ -1,0 +1,385 @@
+@page
+@model ChikiCut.web.Pages.Proveedores.CreateModel
+@{
+    ViewData["Title"] = "Nuevo Proveedor";
+}
+
+<div class="page-header mb-4">
+    <h1><i class="bi bi-building-add me-2"></i>Nuevo Proveedor</h1>
+    <p class="text-muted">Registra un nuevo proveedor en el catálogo</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="post">
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <!-- Información Básica -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-info-circle me-2"></i><strong>Información Básica</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.NombreComercial" class="form-label">Nombre Comercial *</label>
+                                <input asp-for="Proveedor.NombreComercial" class="form-control" placeholder="Ej: Beauty Supply México" />
+                                <span asp-validation-for="Proveedor.NombreComercial" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.RazonSocial" class="form-label">Razón Social</label>
+                                <input asp-for="Proveedor.RazonSocial" class="form-control" placeholder="Ej: Distribuidora Beauty Supply SA de CV" />
+                                <span asp-validation-for="Proveedor.RazonSocial" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.Rfc" class="form-label">RFC</label>
+                                <input asp-for="Proveedor.Rfc" class="form-control" placeholder="DBS123456789" maxlength="13" style="text-transform: uppercase;" />
+                                <span asp-validation-for="Proveedor.Rfc" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.CodigoProveedor" class="form-label">Código de Proveedor</label>
+                                <input asp-for="Proveedor.CodigoProveedor" class="form-control" placeholder="Se genera automáticamente" />
+                                <span asp-validation-for="Proveedor.CodigoProveedor" class="text-danger"></span>
+                                <div class="form-text">Déjalo vacío para generar automáticamente</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.Categoria" class="form-label">Categoría *</label>
+                                <select asp-for="Proveedor.Categoria" class="form-select">
+                                    @foreach (var categoria in Model.CategoriasDisponibles)
+                                    {
+                                        <option value="@categoria">@categoria</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Proveedor.Categoria" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de Contacto -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-person-lines-fill me-2"></i><strong>Información de Contacto</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.ContactoPrincipal" class="form-label">Contacto Principal</label>
+                                <input asp-for="Proveedor.ContactoPrincipal" class="form-control" placeholder="Nombre del contacto" />
+                                <span asp-validation-for="Proveedor.ContactoPrincipal" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.Email" class="form-label">Email</label>
+                                <input asp-for="Proveedor.Email" type="email" class="form-control" placeholder="contacto@proveedor.com" />
+                                <span asp-validation-for="Proveedor.Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.TelefonoPrincipal" class="form-label">Teléfono Principal</label>
+                                <input asp-for="Proveedor.TelefonoPrincipal" class="form-control" placeholder="55-1234-5678" />
+                                <span asp-validation-for="Proveedor.TelefonoPrincipal" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.TelefonoAlternativo" class="form-label">Teléfono Alternativo</label>
+                                <input asp-for="Proveedor.TelefonoAlternativo" class="form-control" placeholder="55-9876-5432" />
+                                <span asp-validation-for="Proveedor.TelefonoAlternativo" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.SitioWeb" class="form-label">Sitio Web</label>
+                                <input asp-for="Proveedor.SitioWeb" type="url" class="form-control" placeholder="https://www.proveedor.com" />
+                                <span asp-validation-for="Proveedor.SitioWeb" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dirección -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-geo-alt me-2"></i><strong>Dirección</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.DireccionLinea1" class="form-label">Dirección</label>
+                                <input asp-for="Proveedor.DireccionLinea1" class="form-control" placeholder="Calle, número, colonia" />
+                                <span asp-validation-for="Proveedor.DireccionLinea1" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.Ciudad" class="form-label">Ciudad</label>
+                                <input asp-for="Proveedor.Ciudad" class="form-control" placeholder="Ciudad de México" />
+                                <span asp-validation-for="Proveedor.Ciudad" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.Estado" class="form-label">Estado</label>
+                                <select asp-for="Proveedor.Estado" class="form-select">
+                                    <option value="">-- Seleccione un estado --</option>
+                                    <option value="CDMX">Ciudad de México</option>
+                                    <option value="Estado de México">Estado de México</option>
+                                    <option value="Jalisco">Jalisco</option>
+                                    <option value="Nuevo León">Nuevo León</option>
+                                    <option value="Puebla">Puebla</option>
+                                    <option value="Guanajuato">Guanajuato</option>
+                                    <option value="Veracruz">Veracruz</option>
+                                    <option value="Michoacán">Michoacán</option>
+                                    <option value="Otros">Otros estados</option>
+                                </select>
+                                <span asp-validation-for="Proveedor.Estado" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.CodigoPostal" class="form-label">Código Postal</label>
+                                <input asp-for="Proveedor.CodigoPostal" class="form-control" placeholder="06700" maxlength="5" />
+                                <span asp-validation-for="Proveedor.CodigoPostal" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tipos de Productos -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-box-seam me-2"></i><strong>Tipos de Productos</strong>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Selecciona los tipos de productos que maneja este proveedor:</p>
+                    <div class="row">
+                        @for (int i = 0; i < Model.TiposProductosDisponibles.Count; i++)
+                        {
+                            var producto = Model.TiposProductosDisponibles[i];
+                            <div class="col-md-4 col-lg-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" 
+                                           name="TiposProductosSeleccionados" value="@producto" id="producto_@i">
+                                    <label class="form-check-label" for="producto_@i">
+                                        @producto
+                                    </label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Comercial -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-credit-card me-2"></i><strong>Información Comercial</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.CondicionesPago" class="form-label">Condiciones de Pago</label>
+                                <select asp-for="Proveedor.CondicionesPago" class="form-select">
+                                    <option value="Contado">Contado</option>
+                                    <option value="Crédito 15 días">Crédito 15 días</option>
+                                    <option value="Crédito 30 días">Crédito 30 días</option>
+                                    <option value="Crédito 45 días">Crédito 45 días</option>
+                                    <option value="Crédito 60 días">Crédito 60 días</option>
+                                    <option value="Personalizado">Personalizado</option>
+                                </select>
+                                <span asp-validation-for="Proveedor.CondicionesPago" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.DiasCredito" class="form-label">Días de Crédito</label>
+                                <input asp-for="Proveedor.DiasCredito" type="number" class="form-control" min="0" max="180" />
+                                <span asp-validation-for="Proveedor.DiasCredito" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.DescuentoProntoPago" class="form-label">Descuento Pronto Pago (%)</label>
+                                <input asp-for="Proveedor.DescuentoProntoPago" type="number" step="0.1" class="form-control" min="0" max="100" />
+                                <span asp-validation-for="Proveedor.DescuentoProntoPago" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.Calificacion" class="form-label">Calificación</label>
+                                <select asp-for="Proveedor.Calificacion" class="form-select">
+                                    <option value="">Sin calificar</option>
+                                    <option value="5">????? Excelente (5)</option>
+                                    <option value="4">????? Muy bueno (4)</option>
+                                    <option value="3">????? Bueno (3)</option>
+                                    <option value="2">????? Regular (2)</option>
+                                    <option value="1">????? Malo (1)</option>
+                                </select>
+                                <span asp-validation-for="Proveedor.Calificacion" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3 mt-4">
+                                <div class="form-check">
+                                    <input asp-for="Proveedor.IsActive" class="form-check-input" />
+                                    <label asp-for="Proveedor.IsActive" class="form-check-label">
+                                        Proveedor Activo
+                                    </label>
+                                </div>
+                                <div class="form-text">Los proveedores activos aparecen en las listas de selección</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label asp-for="Proveedor.Notas" class="form-label">Notas</label>
+                                <textarea asp-for="Proveedor.Notas" class="form-control" rows="3" 
+                                          placeholder="Información adicional sobre el proveedor..."></textarea>
+                                <span asp-validation-for="Proveedor.Notas" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle me-1"></i>Crear Proveedor
+                </button>
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Panel de ayuda -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Información</strong>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-2"><strong>Campos obligatorios (*)</strong></p>
+                <ul class="small text-muted">
+                    <li>Nombre comercial</li>
+                    <li>Categoría del proveedor</li>
+                </ul>
+                
+                <hr class="my-3">
+                
+                <p class="small text-muted mb-2"><strong>Datos automáticos:</strong></p>
+                <ul class="small text-muted">
+                    <li>Código de proveedor (PROV###)</li>
+                    <li>Fecha de registro</li>
+                    <li>País: México (MX)</li>
+                    <li>Moneda: Pesos mexicanos (MXN)</li>
+                </ul>
+                
+                <hr class="my-3">
+                
+                <p class="small text-muted mb-2"><strong>Consejos:</strong></p>
+                <ul class="small text-muted">
+                    <li>Completa toda la información de contacto</li>
+                    <li>Selecciona los productos que maneja</li>
+                    <li>Califica según tu experiencia previa</li>
+                    <li>Registra las condiciones comerciales</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-stars me-2"></i><strong>Sistema de Calificación</strong>
+            </div>
+            <div class="card-body">
+                <div class="small">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="text-warning me-2">?????</span>
+                        <span><strong>Excelente:</strong> Servicio excepcional</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="text-warning me-2">?????</span>
+                        <span><strong>Muy bueno:</strong> Supera expectativas</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="text-warning me-2">?????</span>
+                        <span><strong>Bueno:</strong> Cumple expectativas</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="text-warning me-2">?????</span>
+                        <span><strong>Regular:</strong> Necesita mejorar</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="text-warning me-2">?????</span>
+                        <span><strong>Malo:</strong> Problemas frecuentes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Formatear RFC en mayúsculas
+            const rfcInput = document.getElementById('Proveedor_Rfc');
+            if (rfcInput) {
+                rfcInput.addEventListener('input', function() {
+                    this.value = this.value.toUpperCase();
+                });
+            }
+            
+            // Actualizar días de crédito según condiciones de pago
+            const condicionesSelect = document.getElementById('Proveedor_CondicionesPago');
+            const diasInput = document.getElementById('Proveedor_DiasCredito');
+            
+            if (condicionesSelect && diasInput) {
+                condicionesSelect.addEventListener('change', function() {
+                    const value = this.value;
+                    if (value.includes('15 días')) {
+                        diasInput.value = 15;
+                    } else if (value.includes('30 días')) {
+                        diasInput.value = 30;
+                    } else if (value.includes('45 días')) {
+                        diasInput.value = 45;
+                    } else if (value.includes('60 días')) {
+                        diasInput.value = 60;
+                    } else if (value === 'Contado') {
+                        diasInput.value = 0;
+                    }
+                });
+            }
+        });
+    </script>
+}

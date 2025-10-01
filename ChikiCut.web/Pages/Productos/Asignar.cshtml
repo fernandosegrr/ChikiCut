@@ -1,0 +1,279 @@
+@page
+@model ChikiCut.web.Pages.Productos.AsignarModel
+@{
+    ViewData["Title"] = "Asignar Producto a Sucursales";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1><i class="bi bi-building me-2"></i>Asignar Producto a Sucursales</h1>
+            <p class="text-muted">Configura en qué sucursales estará disponible este producto</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" role="group">
+                <a asp-page="Details" asp-route-id="@Model.Producto.Id" class="btn btn-info">
+                    <i class="bi bi-eye me-1"></i>Ver Detalles
+                </a>
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Información del producto -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-box-seam me-2"></i><strong>Información del Producto</strong>
+    </div>
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center">
+                    @if (!string.IsNullOrEmpty(Model.Producto.ImagenPrincipalUrl))
+                    {
+                        <img src="@Model.Producto.ImagenPrincipalUrl" alt="@Model.Producto.Nombre" 
+                             class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" 
+                             style="width: 60px; height: 60px;">
+                            <i class="bi bi-box display-6 text-muted"></i>
+                        </div>
+                    }
+                    <div>
+                        <h4 class="mb-1">@Model.Producto.Nombre</h4>
+                        <span><i class="bi bi-upc me-1"></i>@Model.Producto.Codigo</span>
+                        <span><i class="bi bi-award me-1"></i>@Model.Producto.Marca</span>
+                        <span><i class="bi bi-folder me-1"></i>@Model.Producto.Categoria</span>
+                        <span><i class="bi bi-currency-dollar me-1"></i>@Model.Producto.PrecioBase.ToString("C") (base)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <span class="badge @(Model.Producto.IsActive ? "bg-success" : "bg-danger") fs-6">
+                    @(Model.Producto.IsActive ? "Activo" : "Inactivo")
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!Model.TieneAccesoGlobal)
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Vista filtrada:</strong> Solo puedes asignar a las sucursales: 
+        @foreach (var sucursal in Model.SucursalesUsuario)
+        {
+            <span class="badge bg-primary me-1">@sucursal</span>
+        }
+    </div>
+}
+
+<form method="post" asp-route-id="@Model.Producto.Id">
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <!-- Acciones rápidas -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-lightning me-2"></i><strong>Acciones Rápidas</strong>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-success w-100" onclick="seleccionarTodas()">
+                        <i class="bi bi-check-all me-1"></i>Asignar a Todas
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-warning w-100" onclick="aplicarPrecioBase()">
+                        <i class="bi bi-currency-dollar me-1"></i>Aplicar Precio Base
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-outline-secondary w-100" onclick="limpiarSeleccion()">
+                        <i class="bi bi-x-circle me-1"></i>Quitar Todas
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de sucursales -->
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-list-check me-2"></i><strong>Sucursales Disponibles (@Model.SucursalesDisponibles.Count)</strong>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="80px">Asignar</th>
+                            <th>Sucursal</th>
+                            <th>Ubicación</th>
+                            <th width="150px">Precio Venta</th>
+                            @if (Model.Producto.RequiereInventario)
+                            {
+                                <th width="120px">Stock Inicial</th>
+                            }
+                            <th width="120px">Disponible</th>
+                            <th width="120px">Destacado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Asignaciones.Count; i++)
+                        {
+                            var asignacion = Model.Asignaciones[i];
+                            var sucursal = Model.SucursalesDisponibles[i];
+                            
+                            <tr data-sucursal="@sucursal.Sucursal.Id">
+                                <td>
+                                    <input type="hidden" asp-for="Asignaciones[i].SucursalId" />
+                                    <input type="hidden" asp-for="Asignaciones[i].SucursalNombre" />
+                                    <div class="form-check">
+                                        <input asp-for="Asignaciones[i].Asignado" 
+                                               class="form-check-input sucursal-checkbox" 
+                                               onchange="toggleInputs(this)">
+                                        <label asp-for="Asignaciones[i].Asignado" class="form-check-label">Sí</label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong>@sucursal.Sucursal.Name</strong>
+                                    <br><small class="text-muted">@sucursal.Sucursal.Code</small>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        @sucursal.Sucursal.City, @sucursal.Sucursal.State
+                                        <br>@sucursal.Sucursal.Phone
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">$</span>
+                                        <input asp-for="Asignaciones[i].PrecioVenta" 
+                                               class="form-control precio-input" 
+                                               step="0.01" 
+                                               min="0">
+                                    </div>
+                                </td>
+                                @if (Model.Producto.RequiereInventario)
+                                {
+                                    <td>
+                                        <input asp-for="Asignaciones[i].StockInicial" 
+                                               class="form-control form-control-sm stock-input" 
+                                               min="0">
+                                    </td>
+                                }
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input asp-for="Asignaciones[i].Disponible" 
+                                               class="form-check-input disponible-input">
+                                        <label asp-for="Asignaciones[i].Disponible" class="form-check-label">Sí</label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input asp-for="Asignaciones[i].EsDestacadoLocal" 
+                                               class="form-check-input destacado-input">
+                                        <label asp-for="Asignaciones[i].EsDestacadoLocal" class="form-check-label">No</label>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle me-1"></i>Guardar Asignaciones
+        </button>
+        <a asp-page="Details" asp-route-id="@Model.Producto.Id" class="btn btn-info">
+            <i class="bi bi-eye me-1"></i>Ver Detalles
+        </a>
+        <a asp-page="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Cancelar
+        </a>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        // Función para habilitar/deshabilitar inputs según checkbox
+        function toggleInputs(checkbox) {
+            const row = checkbox.closest('tr');
+            const inputs = row.querySelectorAll('.precio-input, .stock-input, .disponible-input, .destacado-input');
+            
+            inputs.forEach(input => {
+                input.disabled = !checkbox.checked;
+                if (!checkbox.checked) {
+                    // Resetear valores cuando se deshabilita
+                    if (input.classList.contains('precio-input')) {
+                        input.value = @Model.Producto.PrecioBase;
+                    }
+                    if (input.classList.contains('stock-input')) {
+                        input.value = @(Model.Producto.RequiereInventario ? Model.Producto.StockMinimo : 0);
+                    }
+                    if (input.classList.contains('disponible-input')) {
+                        input.checked = true;
+                    }
+                    if (input.classList.contains('destacado-input')) {
+                        input.checked = false;
+                    }
+                }
+            });
+        }
+
+        function seleccionarTodas() {
+            document.querySelectorAll('.sucursal-checkbox').forEach(checkbox => {
+                checkbox.checked = true;
+                toggleInputs(checkbox);
+            });
+        }
+
+        function limpiarSeleccion() {
+            document.querySelectorAll('.sucursal-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+                toggleInputs(checkbox);
+            });
+        }
+
+        function aplicarPrecioBase() {
+            const precioBase = @Model.Producto.PrecioBase;
+            document.querySelectorAll('.precio-input').forEach(input => {
+                input.value = precioBase;
+            });
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar estado inicial
+            document.querySelectorAll('.sucursal-checkbox').forEach(checkbox => {
+                toggleInputs(checkbox);
+            });
+        });
+    </script>
+}

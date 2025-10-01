@@ -1,0 +1,412 @@
+@page
+@model ChikiCut.web.Pages.Productos.IndexModel
+@{
+    ViewData["Title"] = "Productos";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1><i class="bi bi-box-seam me-2"></i>Gestión de Productos</h1>
+            <p class="text-muted">Administra el inventario y catálogo de productos</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" role="group">
+                <a asp-page="Create" class="btn btn-success">
+                    <i class="bi bi-plus-circle me-1"></i>Nuevo Producto
+                </a>
+                <a asp-page="../Catalogos/MatrizGlobal" asp-route-tipo="productos" class="btn btn-info">
+                    <i class="bi bi-grid-3x3-gap me-1"></i>Matriz Global
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" id="filtrosForm">
+            @Html.AntiForgeryToken()
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label for="searchString" class="form-label">
+                        <i class="bi bi-search me-1"></i>Buscar
+                    </label>
+                    <div class="input-group">
+                        <input name="searchString" value="@Model.SearchString" class="form-control" placeholder="Código, nombre, marca..." id="searchInput">
+                        <button type="submit" class="btn btn-outline-secondary" title="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <div class="form-text">Búsqueda no sensible a mayúsculas/minúsculas</div>
+                </div>
+                <div class="col-md-3">
+                    <label for="categoriaFilter" class="form-label">
+                        <i class="bi bi-tag me-1"></i>Categoría
+                    </label>
+                    <select name="categoriaFilter" id="categoriaFilter" class="form-select">
+                        <option value="">Todas las categorías</option>
+                        @foreach (var categoria in Model.CategoriasDisponibles)
+                        {
+                            <option value="@categoria" selected="@(Model.CategoriaFilter == categoria)">@categoria</option>
+                        }
+                    </select>
+                    <small class="text-muted">Filtro automático</small>
+                </div>
+                <div class="col-md-3">
+                    <label for="marcaFilter" class="form-label">
+                        <i class="bi bi-award me-1"></i>Marca
+                    </label>
+                    <select name="marcaFilter" id="marcaFilter" class="form-select">
+                        <option value="">Todas las marcas</option>
+                        @foreach (var marca in Model.MarcasDisponibles)
+                        {
+                            <option value="@marca" selected="@(Model.MarcaFilter == marca)">@marca</option>
+                        }
+                    </select>
+                    <small class="text-muted">Filtro automático</small>
+                </div>
+                <div class="col-md-2">
+                    <label for="soloActivos" class="form-label">
+                        <i class="bi bi-toggle-on me-1"></i>Estado
+                    </label>
+                    <select name="soloActivos" class="form-select" id="estadoFilter">
+                        <option value="">Todos</option>
+                        <option value="true" selected="@(Model.SoloActivos == true)">Solo activos</option>
+                        <option value="false" selected="@(Model.SoloActivos == false)">Solo inactivos</option>
+                    </select>
+                    <div class="form-text">Filtro automático</div>
+                </div>
+                <div class="col-md-2">
+                    <label for="requiereInventario" class="form-label">
+                        <i class="bi bi-boxes me-1"></i>Inventario
+                    </label>
+                    <select name="requiereInventario" class="form-select" id="inventarioFilter">
+                        <option value="">Todos</option>
+                        <option value="true" selected="@(Model.RequiereInventario == true)">Con inventario</option>
+                        <option value="false" selected="@(Model.RequiereInventario == false)">Sin inventario</option>
+                    </select>
+                    <div class="form-text">Filtro automático</div>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <a asp-page="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-2 mt-2">
+                <div class="col-auto">
+                    <div class="form-check">
+                        <input name="soloDestacados" value="true" class="form-check-input" type="checkbox" 
+                               checked="@(Model.SoloDestacados == true)" id="soloDestacados">
+                        <label class="form-check-label" for="soloDestacados">
+                            <i class="bi bi-star-fill text-warning me-1"></i>Solo destacados
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Estadísticas -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-boxes display-6 mb-2"></i>
+                <h3 class="card-title">@Model.TotalProductos</h3>
+                <p class="card-text mb-0">Total Productos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-check-circle display-6 mb-2"></i>
+                <h3 class="card-title">@Model.ProductosActivos</h3>
+                <p class="card-text mb-0">Productos Activos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-currency-dollar display-6 mb-2"></i>
+                <h3 class="card-title">@Model.PrecioPromedio.ToString("C")</h3>
+                <p class="card-text mb-0">Precio Promedio</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card @(Model.ProductosStockBajo > 0 ? "bg-warning" : "bg-secondary") text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-exclamation-triangle display-6 mb-2"></i>
+                <h3 class="card-title">@Model.ProductosStockBajo</h3>
+                <p class="card-text mb-0">Stock Bajo</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.ProductosStockBajo > 0)
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <strong>Atención:</strong> Hay @Model.ProductosStockBajo producto(s) con stock bajo que requieren reorden.
+        <a href="#" class="alert-link">Ver productos con stock bajo</a>
+    </div>
+}
+
+<!-- Lista de productos -->
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-list me-2"></i><strong>Productos (@Model.Productos.Count)</strong>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Productos.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Precio Base</th>
+                            <th>Contenido</th>
+                            <th>Inventario</th>
+                            <th>Sucursales</th>
+                            <th>Estado</th>
+                            <th width="120px">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var producto in Model.Productos)
+                        {
+                            <tr data-producto="@producto.Id" data-activo="@producto.IsActive.ToString().ToLower()">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        @if (!string.IsNullOrEmpty(producto.ImagenPrincipalUrl))
+                                        {
+                                            <img src="@producto.ImagenPrincipalUrl" alt="@producto.Nombre" 
+                                                 class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" 
+                                                 style="width: 40px; height: 40px;">
+                                                <i class="bi bi-box text-muted"></i>
+                                            </div>
+                                        }
+                                        <div>
+                                            <div class="fw-bold">@producto.Nombre</div>
+                                            <small class="text-muted">
+                                                <span class="badge bg-secondary me-1">@producto.Codigo</span>
+                                                @producto.Marca
+                                                @if (producto.EsDestacado)
+                                                {
+                                                    <i class="bi bi-star-fill text-warning ms-1"></i>
+                                                }
+                                                @if (producto.EsNovedad)
+                                                {
+                                                    <span class="badge bg-info ms-1">NUEVO</span>
+                                                }
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">@producto.Categoria</span>
+                                    @if (!string.IsNullOrEmpty(producto.Subcategoria))
+                                    {
+                                        <br><small class="text-muted">@producto.Subcategoria</small>
+                                    }
+                                </td>
+                                <td>
+                                    <strong>@producto.PrecioFormateado</strong>
+                                    @if (producto.DescuentoMaximo > 0)
+                                    {
+                                        <br><small class="text-info">Desc. máx: @producto.DescuentoMaximo%</small>
+                                    }
+                                </td>
+                                <td>
+                                    @producto.ContenidoFormateado
+                                    @if (producto.EsPerecedero)
+                                    {
+                                        <br><small class="text-warning">
+                                            <i class="bi bi-clock me-1"></i>Perecedero
+                                        </small>
+                                    }
+                                </td>
+                                <td>
+                                    @if (producto.RequiereInventario)
+                                    {
+                                        <span class="badge bg-success">Control</span>
+                                        <br><small class="text-muted">
+                                            Min: @producto.StockMinimo | Máx: @producto.StockMaximo
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Sin control</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">@producto.SucursalesAsignadasCount sucursal(es)</span>
+                                    @if (producto.SucursalesAsignadasCount == 0)
+                                    {
+                                        <br><small class="text-danger">Sin asignar</small>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge @(producto.IsActive ? "bg-success" : "bg-danger")">
+                                        @producto.EstadoDescripcion
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-page="Details" asp-route-id="@producto.Id" 
+                                           class="btn btn-sm btn-outline-info" title="Ver detalles">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-page="Edit" asp-route-id="@producto.Id" 
+                                           class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-page="Asignar" asp-route-id="@producto.Id" 
+                                           class="btn btn-sm btn-outline-success" title="Asignar a sucursales">
+                                            <i class="bi bi-building"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-sm @(producto.IsActive ? "btn-outline-warning" : "btn-outline-success")" 
+                                                title="@(producto.IsActive ? "Inactivar producto" : "Activar producto")"
+                                                onclick="toggleProductoEstado(@producto.Id, @producto.IsActive.ToString().ToLower())">
+                                            <i class="bi @(producto.IsActive ? "bi-pause-circle" : "bi-play-circle")"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-box display-1 text-muted"></i>
+                <h4 class="text-muted mt-3">No se encontraron productos</h4>
+                <p class="text-muted">
+                    @if (!string.IsNullOrEmpty(Model.SearchString) || !string.IsNullOrEmpty(Model.CategoriaFilter) || 
+                         !string.IsNullOrEmpty(Model.MarcaFilter) || Model.SoloActivos.HasValue)
+                    {
+                        <span>Prueba ajustando los filtros de búsqueda.</span>
+                    }
+                    else
+                    {
+                        <span>Comienza agregando tu primer producto al catálogo.</span>
+                    }
+                </p>
+                <a asp-page="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Crear Primer Producto
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // NUEVA FUNCIÓN: Toggle estado del producto
+            window.toggleProductoEstado = async function(productoId, estadoActual) {
+                const confirmMessage = estadoActual 
+                    ? '¿Estás seguro de que deseas INACTIVAR este producto?'
+                    : '¿Estás seguro de que deseas ACTIVAR este producto?';
+                
+                if (!confirm(confirmMessage)) {
+                    return;
+                }
+
+                try {
+                    // Crear FormData para envío correcto
+                    const formData = new FormData();
+                    formData.append('id', productoId);
+                    
+                    // Obtener el token antifalsificación
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    if (token) {
+                        formData.append('__RequestVerificationToken', token);
+                    }
+
+                    const response = await fetch('/Productos?handler=ToggleEstado', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            // Recargar la página para mostrar los cambios
+                            location.reload();
+                        } else {
+                            alert('Error al cambiar el estado del producto: ' + (result.error || 'Error desconocido'));
+                        }
+                    } else {
+                        throw new Error('Error en la respuesta del servidor: ' + response.status);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error de conexión: ' + error.message);
+                }
+            };
+
+            // FILTROS AUTOMÁTICOS
+            const categoriaSelect = document.getElementById('categoriaFilter');
+            const marcaSelect = document.getElementById('marcaFilter');
+            const estadoSelect = document.getElementById('estadoFilter');
+            const inventarioSelect = document.getElementById('inventarioFilter');
+            const searchInput = document.getElementById('searchInput');
+            
+            // Auto-submit cuando cambien los filtros
+            [categoriaSelect, marcaSelect, estadoSelect, inventarioSelect].forEach(select => {
+                if (select) {
+                    select.addEventListener('change', function() {
+                        submitFilters();
+                    });
+                }
+            });
+            
+            // Búsqueda con Enter
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        submitFilters();
+                    }
+                });
+            }
+            
+            // Checkbox destacados
+            const destacadosCheck = document.getElementById('soloDestacados');
+            if (destacadosCheck) {
+                destacadosCheck.addEventListener('change', function() {
+                    submitFilters();
+                });
+            }
+            
+            // Función para enviar filtros automáticamente
+            function submitFilters() {
+                const form = document.getElementById('filtrosForm');
+                if (form) {
+                    form.submit();
+                }
+            }
+        });
+    </script>
+}}

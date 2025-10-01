@@ -1,0 +1,318 @@
+@page
+@model ChikiCut.web.Pages.Empleados.EditModel
+@{
+    ViewData["Title"] = "Editar Empleado";
+}
+
+<div class="page-header mb-4">
+    <h1><i class="bi bi-pencil me-2"></i>Editar Empleado</h1>
+    <p class="text-muted">Modifica la información del empleado</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="post">
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            <input type="hidden" asp-for="Empleado.Id" />
+            <input type="hidden" asp-for="Empleado.CreatedAt" />
+            <input type="hidden" asp-for="Empleado.Pais" />
+            <input type="hidden" asp-for="Empleado.Especialidades" />
+            <input type="hidden" asp-for="Empleado.HorarioTrabajo" />
+            <input type="hidden" asp-for="Empleado.Comisiones" />
+
+            <!-- Información Básica -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-person me-2"></i><strong>Información Personal</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.Nombre" class="form-label">Nombre *</label>
+                                <input asp-for="Empleado.Nombre" class="form-control" />
+                                <span asp-validation-for="Empleado.Nombre" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.ApellidoPaterno" class="form-label">Apellido Paterno *</label>
+                                <input asp-for="Empleado.ApellidoPaterno" class="form-control" />
+                                <span asp-validation-for="Empleado.ApellidoPaterno" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.ApellidoMaterno" class="form-label">Apellido Materno</label>
+                                <input asp-for="Empleado.ApellidoMaterno" class="form-control" />
+                                <span asp-validation-for="Empleado.ApellidoMaterno" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.Alias" class="form-label">Alias/Apodo</label>
+                                <input asp-for="Empleado.Alias" class="form-control" />
+                                <span asp-validation-for="Empleado.Alias" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.FechaNacimiento" class="form-label">Fecha de Nacimiento</label>
+                                <input asp-for="Empleado.FechaNacimiento" type="date" class="form-control" />
+                                <span asp-validation-for="Empleado.FechaNacimiento" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Laboral -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-briefcase me-2"></i><strong>Información Laboral</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.SucursalId" class="form-label">Sucursal *</label>
+                                <select asp-for="Empleado.SucursalId" asp-items="Model.SucursalOptions" class="form-select">
+                                    <option value="">-- Seleccione una sucursal --</option>
+                                </select>
+                                <span asp-validation-for="Empleado.SucursalId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.CodigoEmpleado" class="form-label">Código Empleado *</label>
+                                <input asp-for="Empleado.CodigoEmpleado" class="form-control" readonly />
+                                <span asp-validation-for="Empleado.CodigoEmpleado" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.PuestoId" class="form-label">Puesto *</label>
+                                <select asp-for="Empleado.PuestoId" asp-items="Model.PuestoOptions" class="form-select">
+                                    <option value="">-- Seleccione un puesto --</option>
+                                </select>
+                                <span asp-validation-for="Empleado.PuestoId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.SalarioBase" class="form-label">Salario Base</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Empleado.SalarioBase" type="number" step="0.01" class="form-control" />
+                                </div>
+                                <span asp-validation-for="Empleado.SalarioBase" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.FechaIngreso" class="form-label">Fecha de Ingreso *</label>
+                                <input asp-for="Empleado.FechaIngreso" type="date" class="form-control" />
+                                <span asp-validation-for="Empleado.FechaIngreso" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3 mt-4">
+                                <div class="form-check">
+                                    <input asp-for="Empleado.IsActive" class="form-check-input" />
+                                    <label asp-for="Empleado.IsActive" class="form-check-label">Empleado Activo</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de Contacto -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-telephone me-2"></i><strong>Información de Contacto</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.Telefono" class="form-label">Teléfono *</label>
+                                <input asp-for="Empleado.Telefono" class="form-control" />
+                                <span asp-validation-for="Empleado.Telefono" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.Email" class="form-label">Email</label>
+                                <input asp-for="Empleado.Email" type="email" class="form-control" />
+                                <span asp-validation-for="Empleado.Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Empleado.DireccionLinea1" class="form-label">Dirección *</label>
+                        <input asp-for="Empleado.DireccionLinea1" class="form-control" />
+                        <span asp-validation-for="Empleado.DireccionLinea1" class="text-danger"></span>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.Ciudad" class="form-label">Ciudad *</label>
+                                <input asp-for="Empleado.Ciudad" class="form-control" />
+                                <span asp-validation-for="Empleado.Ciudad" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.Estado" class="form-label">Estado *</label>
+                                <select asp-for="Empleado.Estado" class="form-select">
+                                    <option value="">-- Seleccione un estado --</option>
+                                    <option value="CDMX">Ciudad de México</option>
+                                    <option value="Estado de México">Estado de México</option>
+                                    <option value="Jalisco">Jalisco</option>
+                                    <option value="Nuevo León">Nuevo León</option>
+                                    <option value="Puebla">Puebla</option>
+                                    <option value="Guanajuato">Guanajuato</option>
+                                    <option value="Veracruz">Veracruz</option>
+                                    <option value="Michoacán">Michoacán</option>
+                                    <option value="Oaxaca">Oaxaca</option>
+                                    <option value="Chihuahua">Chihuahua</option>
+                                    <option value="Guerrero">Guerrero</option>
+                                    <option value="Tamaulipas">Tamaulipas</option>
+                                    <option value="Baja California">Baja California</option>
+                                    <option value="Sinaloa">Sinaloa</option>
+                                    <option value="Coahuila">Coahuila</option>
+                                    <option value="Hidalgo">Hidalgo</option>
+                                    <option value="Sonora">Sonora</option>
+                                    <option value="San Luis Potosí">San Luis Potosí</option>
+                                    <option value="Tabasco">Tabasco</option>
+                                    <option value="Yucatán">Yucatán</option>
+                                    <option value="Querétaro">Querétaro</option>
+                                    <option value="Morelos">Morelos</option>
+                                    <option value="Durango">Durango</option>
+                                    <option value="Zacatecas">Zacatecas</option>
+                                    <option value="Quintana Roo">Quintana Roo</option>
+                                    <option value="Tlaxcala">Tlaxcala</option>
+                                    <option value="Aguascalientes">Aguascalientes</option>
+                                    <option value="Nayarit">Nayarit</option>
+                                    <option value="Campeche">Campeche</option>
+                                    <option value="Baja California Sur">Baja California Sur</option>
+                                    <option value="Colima">Colima</option>
+                                </select>
+                                <span asp-validation-for="Empleado.Estado" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Empleado.CodigoPostal" class="form-label">Código Postal *</label>
+                                <input asp-for="Empleado.CodigoPostal" class="form-control" />
+                                <span asp-validation-for="Empleado.CodigoPostal" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Especialidades -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-scissors me-2"></i><strong>Especialidades</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @{
+                                var especialidades = new[] { "Cortes infantiles", "Peinados", "Trenzas" };
+                                var counter = 1;
+                            }
+                            @foreach (var esp in especialidades)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="EspecialidadesSeleccionadas" 
+                                           value="@esp" id="esp@(counter)" 
+                                           @(Model.EspecialidadesSeleccionadas.Contains(esp) ? "checked" : "")>
+                                    <label class="form-check-label" for="esp@(counter)">@esp</label>
+                                </div>
+                                counter++;
+                            }
+                        </div>
+                        <div class="col-md-4">
+                            @{
+                                var especialidades2 = new[] { "Tintes fantasía", "Maquillaje infantil", "Manicure" };
+                            }
+                            @foreach (var esp in especialidades2)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="EspecialidadesSeleccionadas" 
+                                           value="@esp" id="esp@(counter)" 
+                                           @(Model.EspecialidadesSeleccionadas.Contains(esp) ? "checked" : "")>
+                                    <label class="form-check-label" for="esp@(counter)">@esp</label>
+                                </div>
+                                counter++;
+                            }
+                        </div>
+                        <div class="col-md-4">
+                            @{
+                                var especialidades3 = new[] { "Atención al cliente", "Manejo de caja" };
+                            }
+                            @foreach (var esp in especialidades3)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="EspecialidadesSeleccionadas" 
+                                           value="@esp" id="esp@(counter)" 
+                                           @(Model.EspecialidadesSeleccionadas.Contains(esp) ? "checked" : "")>
+                                    <label class="form-check-label" for="esp@(counter)">@esp</label>
+                                </div>
+                                counter++;
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i>Guardar Cambios
+                </button>
+                <a asp-page="Details" asp-route-id="@Model.Empleado.Id" class="btn btn-info">
+                    <i class="bi bi-eye me-1"></i>Ver Detalles
+                </a>
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Información</strong>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted"><strong>Campos editables:</strong></p>
+                <ul class="small text-muted">
+                    <li>Información personal básica</li>
+                    <li>Sucursal y puesto</li>
+                    <li>Información de contacto y ubicación</li>
+                    <li>Especialidades</li>
+                    <li>Estado activo/inactivo</li>
+                </ul>
+                
+                <hr>
+                
+                <p class="small text-muted"><strong>Nota:</strong> El código de empleado no se puede modificar para mantener la integridad del sistema.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

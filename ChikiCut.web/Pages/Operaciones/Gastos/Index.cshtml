@@ -1,0 +1,608 @@
+@page
+@model ChikiCut.web.Pages.Operaciones.Gastos.IndexModel
+@{
+    ViewData["Title"] = "Gastos";
+}
+<style>
+#aceptarCookies {
+    display: none;
+}
+.invalid-feedback-custom {
+    color: #fff;
+    background: #dc3545;
+    border-radius: 0.25rem;
+    padding: 0.25em 0.75em;
+    font-size: 0.95em;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    display: none;
+    box-shadow: 0 2px 8px rgba(220,53,69,0.15);
+}
+input.is-invalid, select.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220,53,69,.25);
+}
+#gastosConceptoChart {
+    margin: 0 auto;
+    display: block;
+}
+</style>
+<script>
+window.sucursalesData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AllSucursales.Select(s => new { id = s.Id, name = s.Name, code = s.Code })));
+window.conceptosData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Conceptos.Select(c => new { id = c.Id, nombre = c.Nombre })));
+</script>
+<div class="container mt-4">
+    <h2 class="mb-4">Gastos</h2>
+    <ul class="nav nav-tabs mb-3" id="gastosTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="captura-tab" data-bs-toggle="tab" data-bs-target="#captura" type="button" role="tab">Captura</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reporte-tab" data-bs-toggle="tab" data-bs-target="#reporte" type="button" role="tab">Reporte</button>
+        </li>
+    </ul>
+    <div class="tab-content" id="gastosTabsContent">
+        <div class="tab-pane fade show active" id="captura" role="tabpanel">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <form id="gastoForm" autocomplete="off" enctype="multipart/form-data">
+                        <div class="row mb-3 position-relative">
+                            <div class="col-md-6 position-relative">
+                                <label class="form-label">Sucursal</label>
+                                <select asp-for="Gasto.SucursalId" class="form-select" id="Gasto_SucursalId">
+                                    <option value="">Selecciona...</option>
+                                    @foreach (var sucursal in Model.SucursalesAsignadas)
+                                    {
+                                        <option value="@sucursal.Id">@sucursal.Name (@sucursal.Id/@sucursal.Code)</option>
+                                    }
+                                </select>
+                                <div class="invalid-feedback-custom" id="alertSucursal"></div>
+                            </div>
+                            <div class="col-md-6 position-relative">
+                                <label class="form-label">Concepto</label>
+                                <select asp-for="Gasto.ConceptoGastoId" class="form-select" id="Gasto_ConceptoGastoId">
+                                    <option value="">Selecciona...</option>
+                                    @foreach (var concepto in Model.Conceptos)
+                                    {
+                                        <option value="@concepto.Id">@concepto.Nombre</option>
+                                    }
+                                </select>
+                                <div class="invalid-feedback-custom" id="alertConcepto"></div>
+                            </div>
+                        </div>
+                        <div class="row mb-3 position-relative">
+                            <div class="col-md-6 position-relative">
+                                <label class="form-label">Monto</label>
+                                <input asp-for="Gasto.Monto" class="form-control" type="number" step="0.01" min="0" id="Gasto_Monto" />
+                                <div class="invalid-feedback-custom" id="alertMonto"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3 position-relative">
+                            <label class="form-label">Método de Pago</label>
+                            <select asp-for="Gasto.MetodoPago" class="form-select" id="Gasto_MetodoPago">
+                                <option value="">Selecciona...</option>
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Tarjeta">Tarjeta</option>
+                                <option value="Transferencia">Transferencia</option>
+                                <option value="Cheque">Cheque</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                            <div class="invalid-feedback-custom" id="alertMetodo"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <input asp-for="Gasto.Descripcion" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Observaciones</label>
+                            <textarea asp-for="Gasto.Observaciones" class="form-control"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Comprobante (imagen o PDF)</label>
+                            <input type="file" class="form-control" id="ComprobanteFile" name="ComprobanteFile" accept="image/*,application/pdf" />
+                            <small class="text-muted">Formatos permitidos: JPG, PNG, PDF. Máx. 5MB.</small>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Registrar Gasto</button>
+                        </div>
+                    </form>
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5>Gastos registrados</h5>
+                        </div>
+                        <div class="card-body p-0" id="gastosGridContainer">
+                            @await Html.PartialAsync("_GastosGrid", await Model.GetGridRowsAsync())
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="reporte" role="tabpanel">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <form id="filtrosReporteGastos" class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label">Sucursal</label>
+                            <select class="form-select" id="filtroSucursal" name="sucursalId">
+                                <option value="">Todas</option>
+                                <!-- Opciones dinámicas -->
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Fecha</label>
+                            <input type="date" class="form-control" id="filtroFecha" name="fecha" />
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">Buscar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div id="reporteGastosGrid">
+                <!-- Aquí se renderiza la tabla de resultados del reporte -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function renderGastosConceptoChart() {
+            var canvas = document.getElementById('gastosConceptoChart');
+            if (!canvas) return;
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = 320;
+            var labels = [];
+            var values = [];
+            try {
+                labels = JSON.parse(canvas.getAttribute('data-labels'));
+                values = JSON.parse(canvas.getAttribute('data-values'));
+            } catch (e) { return; }
+            var palette = [
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 99, 132, 0.7)',
+                'rgba(255, 206, 86, 0.7)',
+                'rgba(75, 192, 192, 0.7)',
+                'rgba(153, 102, 255, 0.7)',
+                'rgba(255, 159, 64, 0.7)',
+                'rgba(40, 167, 69, 0.7)',
+                'rgba(255, 205, 210, 0.7)',
+                'rgba(0, 123, 255, 0.7)',
+                'rgba(220, 53, 69, 0.7)'
+            ];
+            var borderPalette = palette.map(c => c.replace('0.7', '1'));
+            var bgColors = labels.map((_, i) => palette[i % palette.length]);
+            var borderColors = labels.map((_, i) => borderPalette[i % borderPalette.length]);
+            var chartInstance = Chart.getChart(canvas);
+            if (chartInstance) chartInstance.destroy();
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Gasto por concepto',
+                        data: values,
+                        backgroundColor: bgColors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let value = context.parsed.y;
+                                    // El formateador de moneda ya incluye el símbolo $ para es-MX
+                                    return value.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 2 });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', renderGastosConceptoChart);
+        // Copia el JS de Create para validación y AJAX
+        function validarGastoForm() {
+            let valido = true;
+            document.querySelectorAll('.invalid-feedback-custom').forEach(e => e.style.display = 'none');
+            document.querySelectorAll('.is-invalid').forEach(e => e.classList.remove('is-invalid'));
+            const sucursal = document.getElementById('Gasto_SucursalId');
+            if (!sucursal.value) {
+                document.getElementById('alertSucursal').textContent = 'Selecciona una sucursal';
+                document.getElementById('alertSucursal').style.display = 'block';
+                sucursal.classList.add('is-invalid');
+                valido = false;
+            }
+            const concepto = document.getElementById('Gasto_ConceptoGastoId');
+            if (!concepto.value) {
+                document.getElementById('alertConcepto').textContent = 'Selecciona un concepto';
+                document.getElementById('alertConcepto').style.display = 'block';
+                concepto.classList.add('is-invalid');
+                valido = false;
+            }
+            const metodo = document.getElementById('Gasto_MetodoPago');
+            if (!metodo.value) {
+                document.getElementById('alertMetodo').textContent = 'Selecciona un método de pago';
+                document.getElementById('alertMetodo').style.display = 'block';
+                metodo.classList.add('is-invalid');
+                valido = false;
+            }
+            const monto = document.getElementById('Gasto_Monto');
+            if (!monto.value || isNaN(monto.value) || parseFloat(monto.value) <= 0) {
+                document.getElementById('alertMonto').textContent = 'Ingresa un importe válido';
+                document.getElementById('alertMonto').style.display = 'block';
+                monto.classList.add('is-invalid');
+                valido = false;
+            }
+            return valido;
+        }
+        async function recargarGastosGrid() {
+            const response = await fetch(window.location.pathname + '?handler=GastosGridPartial', {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            if (response.ok) {
+                const html = await response.text();
+                document.getElementById('gastosGridContainer').innerHTML = html;
+            }
+        }
+        document.getElementById('gastoForm').addEventListener('submit', async function (e) {
+            if (!validarGastoForm()) {
+                e.preventDefault();
+                document.querySelectorAll('.alert-success.position-fixed').forEach(el => el.remove());
+                return false;
+            }
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('sucursalId', document.getElementById('Gasto_SucursalId').value);
+            formData.append('conceptoId', document.getElementById('Gasto_ConceptoGastoId').value);
+            formData.append('monto', document.getElementById('Gasto_Monto').value);
+            formData.append('metodoPago', document.getElementById('Gasto_MetodoPago').value);
+            formData.append('descripcion', document.querySelector('[name="Gasto.Descripcion"]').value);
+            formData.append('observaciones', document.querySelector('[name="Gasto.Observaciones"]').value);
+            // Agregar el archivo del comprobante si existe
+            const comprobanteFile = document.getElementById('ComprobanteFile');
+            if (comprobanteFile.files.length > 0) {
+                formData.append('comprobanteFile', comprobanteFile.files[0]);
+            }
+            const response = await fetch('/api/GastosApi/agregar', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            });
+            const result = await response.json();
+            if (result.success) {
+                const msg = document.createElement('div');
+                msg.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+                msg.textContent = '¡Gasto registrado correctamente!';
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 2000);
+                await recargarGastosGrid();
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            // Botón editar y eliminar en el grid
+            const grid = document.getElementById('gastosGridContainer');
+            grid?.addEventListener('click', function(ev) {
+                const btn = ev.target.closest('.btn-editar-gasto');
+                if (btn) {
+                    const id = Number(btn.dataset.gastoId);
+                    cargarDatosGastoIndex(id);
+                }
+                const btnDel = ev.target.closest('.btn-eliminar-gasto');
+                if (btnDel) {
+                    const id = Number(btnDel.dataset.gastoId);
+                    if (confirm('¿Seguro que deseas eliminar este gasto? Esta acción no se puede deshacer.')) {
+                        eliminarGasto(id);
+                    }
+                }
+            });
+            // Formulario de edición para el modal Index
+            document.getElementById('editGastoFormIndex').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData();
+                formData.append('editGastoId', document.getElementById('editGastoIdIndex').value);
+                formData.append('editSucursalId', document.getElementById('editSucursalIdIndex').value);
+                formData.append('editConceptoId', document.getElementById('editConceptoIdIndex').value);
+                formData.append('editMonto', document.getElementById('editMontoIndex').value);
+                formData.append('editMetodoPago', document.getElementById('editMetodoPagoIndex').value);
+                formData.append('editDescripcion', document.getElementById('editDescripcionIndex').value);
+                formData.append('editObservaciones', document.getElementById('editObservacionesIndex').value);
+                formData.append('editFecha', document.getElementById('editFechaIndex').value);
+                // Agregar el archivo del comprobante nuevo si existe
+                const editComprobanteFile = document.getElementById('editComprobanteFile');
+                if (editComprobanteFile.files.length > 0) {
+                    formData.append('editComprobanteFile', editComprobanteFile.files[0]);
+                }
+                const response = await fetch('/api/GastosApi/editar', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (result.success) {
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('editGastoModalIndex'));
+                    if (modal) modal.hide();
+                    await recargarGastosGrid();
+                    const msg = document.createElement('div');
+                    msg.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+                    msg.textContent = '¡Gasto actualizado correctamente!';
+                    document.body.appendChild(msg);
+                    setTimeout(() => msg.remove(), 2000);
+                } else {
+                    alert(result.message || 'Error al guardar los cambios');
+                }
+            });
+        });
+        // Función para poblar selects y seleccionar el valor correcto
+        function poblarSelectConDatos(selectId, data, valueProp, textProp, selectedValue) {
+            const sel = document.getElementById(selectId);
+            if (!sel) return;
+            sel.innerHTML = '';
+            data.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item[valueProp];
+                opt.textContent = item[textProp];
+                if (String(item[valueProp]) === String(selectedValue)) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+        // Cargar datos en el modal de edición
+        window.cargarDatosGastoIndex = function(id) {
+            fetch(`?handler=GetGasto&id=${id}`)
+                .then(response => response.json())
+                .then(gasto => {
+                    document.getElementById('editGastoIdIndex').value = gasto.id || '';
+                    document.getElementById('editMontoIndex').value = gasto.monto || '';
+                    document.getElementById('editDescripcionIndex').value = gasto.descripcion || '';
+                    document.getElementById('editObservacionesIndex').value = gasto.observaciones || '';
+                    document.getElementById('editMetodoPagoIndex').value = gasto.metodoPago || '';
+                    if (gasto.fecha) {
+                        let fecha = gasto.fecha;
+                        if (fecha.length > 10) fecha = fecha.substring(0, 10);
+                        document.getElementById('editFechaIndex').value = fecha;
+                    } else {
+                        document.getElementById('editFechaIndex').value = '';
+                    }
+                    // Poblar selects y seleccionar el valor correcto
+                    poblarSelectConDatos('editSucursalIdIndex', window.sucursalesData, 'id', 'name', gasto.sucursalId);
+                    poblarSelectConDatos('editConceptoIdIndex', window.conceptosData, 'id', 'nombre', gasto.conceptoGastoId);
+                    // Mostrar comprobante actual (previsualización directa)
+                    const comprobanteContainer = document.getElementById('editComprobanteActualContainer');
+                    comprobanteContainer.innerHTML = '';
+                    if (gasto.comprobanteUrl) {
+                        let previewHtml = '';
+                        if (gasto.comprobanteUrl.endsWith('.pdf')) {
+                            previewHtml = `<iframe src="${gasto.comprobanteUrl}" width="100%" height="300px" style="border:none;"></iframe>`;
+                        } else {
+                            previewHtml = `<img src="${gasto.comprobanteUrl}" class="img-fluid rounded shadow" style="max-height:200px;max-width:100%;" alt="Comprobante actual" />`;
+                        }
+                        comprobanteContainer.innerHTML = previewHtml +
+                            '<div class="mt-2"><button type="button" class="btn btn-outline-info btn-sm btn-ver-comprobante" data-url="' + gasto.comprobanteUrl + '"><i class="bi bi-eye"></i> Ver comprobante actual</button></div>';
+                    } else {
+                        comprobanteContainer.innerHTML = '<span class="text-muted">Sin comprobante</span>';
+                    }
+                    // Limpiar input file
+                    document.getElementById('editComprobanteFile').value = '';
+                    // Abre el modal solo después de asignar los datos
+                    const modalEl = document.getElementById('editGastoModalIndex');
+                    if (!modalEl) { console.error('No se encontró el modal editGastoModalIndex'); return; }
+                    let modal = bootstrap.Modal.getInstance(modalEl);
+                    if (!modal) modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                });
+        }
+        // Eliminar gasto
+        async function eliminarGasto(id) {
+            try {
+                const response = await fetch(`/api/GastosApi/eliminar/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                    credentials: 'include'
+                });
+                let result = null;
+                try {
+                    result = await response.json();
+                } catch (jsonErr) {}
+                if (response.ok && result && result.success) {
+                    await recargarGastosGrid();
+                    const msg = document.createElement('div');
+                    msg.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+                    msg.textContent = '¡Gasto eliminado correctamente!';
+                    document.body.appendChild(msg);
+                    setTimeout(() => msg.remove(), 2000);
+                } else {
+                    alert((result && result.message) || 'Error al eliminar el gasto.');
+                }
+            } catch (err) {
+                alert('Error al eliminar el gasto: ' + err);
+            }
+        }
+        // Delegación global para visor de comprobante
+        document.addEventListener('click', function(ev) {
+            const btnVer = ev.target.closest('.btn-ver-comprobante');
+            if (btnVer) {
+                const url = btnVer.getAttribute('data-url');
+                if (url) {
+                    mostrarComprobanteEnModal(url);
+                }
+            }
+        });
+        function mostrarComprobanteEnModal(url) {
+            const modalEl = document.getElementById('visorComprobanteModal');
+            if (!modalEl) {
+                alert('No se encontró el modal visorComprobanteModal en el DOM');
+                return;
+            }
+            const body = document.getElementById('visorComprobanteBody');
+            body.innerHTML = '';
+            if (url.endsWith('.pdf')) {
+                body.innerHTML = `<iframe src="${url}" width="100%" height="600px" style="border:none;"></iframe>`;
+            } else {
+                body.innerHTML = `<img src="${url}" class="img-fluid rounded shadow" style="max-height:600px;" alt="Comprobante" />`;
+            }
+            let modal = bootstrap.Modal.getInstance(modalEl);
+            if (!modal) modal = new bootstrap.Modal(modalEl);
+            modal.show();
+            setTimeout(() => {
+                modalEl.style.zIndex = 1080;
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(bd => {
+                    if (bd.style.zIndex === '' || bd.style.zIndex == 1050) {
+                        bd.style.zIndex = 1079;
+                    }
+                });
+            }, 100);
+        }
+        // Restaurar z-index de backdrops al cerrar el visor
+        document.getElementById('visorComprobanteModal').addEventListener('hidden.bs.modal', function () {
+            document.querySelectorAll('.modal-backdrop').forEach(bd => {
+                bd.style.zIndex = '';
+            });
+        });
+        // --- Reporte de gastos: AJAX para filtros ---
+        document.getElementById('filtrosReporteGastos').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const sucursalId = document.getElementById('filtroSucursal').value;
+            const fecha = document.getElementById('filtroFecha').value;
+            let url = '?handler=ReporteGastos';
+            const params = [];
+            if (sucursalId) params.push('sucursalId=' + encodeURIComponent(sucursalId));
+            if (fecha) params.push('fecha=' + encodeURIComponent(fecha));
+            if (params.length > 0) url += '&' + params.join('&');
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            if (response.ok) {
+                const html = await response.text();
+                document.getElementById('reporteGastosGrid').innerHTML = html;
+                // Vuelve a renderizar la gráfica si la función existe
+                if (typeof renderGastosConceptoChart === 'function') renderGastosConceptoChart();
+            } else {
+                document.getElementById('reporteGastosGrid').innerHTML = '<div class="alert alert-danger">Error al cargar el reporte.</div>';
+            }
+        });
+        // Poblar sucursales en el filtro de reporte
+        document.addEventListener('DOMContentLoaded', function() {
+            const filtroSucursal = document.getElementById('filtroSucursal');
+            if (filtroSucursal && window.sucursalesData) {
+                window.sucursalesData.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.name;
+                    filtroSucursal.appendChild(opt);
+                });
+            }
+        });
+    </script>
+}
+
+<!-- Modal de edición de gasto exclusivo para Index.cshtml -->
+<div class="modal fade" id="editGastoModalIndex" tabindex="-1" aria-labelledby="editGastoModalLabelIndex" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg rounded-4">
+            <div class="modal-header bg-primary text-white rounded-top-4">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-pencil-square fs-3"></i>
+                    <div>
+                        <h5 class="modal-title mb-0" id="editGastoModalLabelIndex">Editar Gasto</h5>
+                        <small class="text-white-50">Modifica los datos y guarda los cambios</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body bg-light">
+                <form id="editGastoFormIndex" autocomplete="off" enctype="multipart/form-data">
+                    <input type="hidden" id="editGastoIdIndex" name="editGastoIdIndex" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Sucursal</label>
+                            <select id="editSucursalIdIndex" name="editSucursalIdIndex" class="form-select rounded-pill"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Concepto</label>
+                            <select id="editConceptoIdIndex" name="editConceptoIdIndex" class="form-select rounded-pill"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Monto</label>
+                            <input id="editMontoIndex" name="editMontoIndex" class="form-control rounded-pill text-end" type="number" step="0.01" min="0" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Método de Pago</label>
+                            <select id="editMetodoPagoIndex" name="editMetodoPagoIndex" class="form-select rounded-pill">
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Tarjeta">Tarjeta</option>
+                                <option value="Transferencia">Transferencia</option>
+                                <option value="Cheque">Cheque</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Fecha</label>
+                            <input id="editFechaIndex" name="editFechaIndex" class="form-control rounded-pill" type="date" readonly />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Descripción</label>
+                            <input id="editDescripcionIndex" name="editDescripcionIndex" class="form-control rounded-3" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Observaciones</label>
+                            <textarea id="editObservacionesIndex" name="editObservacionesIndex" class="form-control rounded-3"></textarea>
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label">Comprobante actual</label>
+                        <div id="editComprobanteActualContainer"></div>
+                        <label class="form-label mt-2">Cambiar comprobante (imagen o PDF)</label>
+                        <input type="file" class="form-control" id="editComprobanteFile" name="editComprobanteFile" accept="image/*,application/pdf" />
+                        <small class="text-muted">Formatos permitidos: JPG, PNG, PDF. Máx. 5MB.</small>
+                    </div>
+                    <hr class="my-4" />
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4">
+                            <i class="bi bi-save"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal visor de comprobante: MOVERLO FUERA DEL CONTAINER PRINCIPAL -->
+<div class="modal fade" id="visorComprobanteModal" tabindex="-1" aria-labelledby="visorComprobanteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="visorComprobanteLabel">Comprobante</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body d-flex justify-content-center align-items-center" id="visorComprobanteBody" style="min-height:400px;">
+                <!-- Aquí se carga la previsualización -->
+            </div>
+        </div>
+    </div>
+</div>

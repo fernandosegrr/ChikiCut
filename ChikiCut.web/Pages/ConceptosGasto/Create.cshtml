@@ -1,0 +1,444 @@
+@page
+@model ChikiCut.web.Pages.ConceptosGasto.CreateModel
+@{
+    ViewData["Title"] = "Nuevo Concepto de Gasto";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1><i class="bi bi-plus-circle me-2"></i>Nuevo Concepto de Gasto</h1>
+            <p class="text-muted">Crea un nuevo tipo de gasto para las operaciones</p>
+        </div>
+        <div class="col-auto">
+            <a asp-page="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Volver a Lista
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="post" id="createConceptoForm">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <!-- Información Básica -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-info-circle me-2"></i><strong>Información Básica</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="ConceptoGasto.Codigo" class="form-label">Código *</label>
+                                <div class="input-group">
+                                    <input asp-for="ConceptoGasto.Codigo" class="form-control" maxlength="10" placeholder="Ej: ADMIN001">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="generarCodigo()" title="Generar código automático">
+                                        <i class="bi bi-shuffle"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="ConceptoGasto.Codigo" class="text-danger"></span>
+                                <div class="form-text">Código único para identificar el concepto</div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label asp-for="ConceptoGasto.Nombre" class="form-label">Nombre del Concepto *</label>
+                                <input asp-for="ConceptoGasto.Nombre" class="form-control" placeholder="Ej: Pago de Electricidad" maxlength="100">
+                                <span asp-validation-for="ConceptoGasto.Nombre" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label asp-for="ConceptoGasto.Descripcion" class="form-label">Descripción</label>
+                                <textarea asp-for="ConceptoGasto.Descripcion" class="form-control" rows="3" placeholder="Describe para qué se usa este concepto de gasto..."></textarea>
+                                <span asp-validation-for="ConceptoGasto.Descripcion" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clasificación -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-tags me-2"></i><strong>Clasificación</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ConceptoGasto.Categoria" class="form-label">Categoría *</label>
+                                <select asp-for="ConceptoGasto.Categoria" class="form-select" id="categoriaSelect">
+                                    <option value="">-- Seleccione una categoría --</option>
+                                    @foreach (var categoria in ChikiCut.web.Data.Entities.ConceptoGasto.Categorias.Lista)
+                                    {
+                                        <option value="@categoria">@categoria</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="ConceptoGasto.Categoria" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ConceptoGasto.Subcategoria" class="form-label">Subcategoría</label>
+                                <input asp-for="ConceptoGasto.Subcategoria" class="form-control" placeholder="Ej: Básicos, Especiales" maxlength="50">
+                                <span asp-validation-for="ConceptoGasto.Subcategoria" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ConceptoGasto.TipoFrecuencia" class="form-label">Frecuencia de Uso</label>
+                                <select asp-for="ConceptoGasto.TipoFrecuencia" class="form-select">
+                                    @foreach (var frecuencia in ChikiCut.web.Data.Entities.ConceptoGasto.TiposFrecuencia.Lista)
+                                    {
+                                        <option value="@frecuencia">@frecuencia</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="ConceptoGasto.TipoFrecuencia" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ConceptoGasto.CuentaContable" class="form-label">Cuenta Contable</label>
+                                <input asp-for="ConceptoGasto.CuentaContable" class="form-control" placeholder="Ej: 5101.001" maxlength="20">
+                                <span asp-validation-for="ConceptoGasto.CuentaContable" class="text-danger"></span>
+                                <div class="form-text">Para integración contable</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controles Financieros -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-shield-check me-2"></i><strong>Controles Financieros</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ConceptoGasto.LimiteMaximo" class="form-label">Límite Máximo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="ConceptoGasto.LimiteMaximo" class="form-control" type="number" step="0.01" placeholder="0.00">
+                                </div>
+                                <span asp-validation-for="ConceptoGasto.LimiteMaximo" class="text-danger"></span>
+                                <div class="form-text">Límite sin autorización especial (opcional)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ConceptoGasto.NivelAutorizacionRequerido" class="form-label">Nivel de Autorización</label>
+                                <select asp-for="ConceptoGasto.NivelAutorizacionRequerido" class="form-select">
+                                    <option value="1">1 - Básico</option>
+                                    <option value="2">2 - Intermedio</option>
+                                    <option value="3">3 - Supervisor</option>
+                                    <option value="4">4 - Gerencial</option>
+                                    <option value="5">5 - Directivo</option>
+                                </select>
+                                <span asp-validation-for="ConceptoGasto.NivelAutorizacionRequerido" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check mb-3">
+                                <input asp-for="ConceptoGasto.RequiereComprobante" class="form-check-input" checked>
+                                <label asp-for="ConceptoGasto.RequiereComprobante" class="form-check-label">
+                                    Requiere Comprobante Fiscal
+                                </label>
+                                <div class="form-text">Obligatorio presentar factura o recibo</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check mb-3">
+                                <input asp-for="ConceptoGasto.RequiereAutorizacion" class="form-check-input">
+                                <label asp-for="ConceptoGasto.RequiereAutorizacion" class="form-check-label">
+                                    Requiere Autorización Previa
+                                </label>
+                                <div class="form-text">Debe ser aprobado antes del gasto</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sucursales Aplicables -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-building me-2"></i><strong>Sucursales Aplicables</strong>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input asp-for="ConceptoGasto.AplicaTodasSucursales" class="form-check-input" id="aplicaTodasCheck" checked>
+                            <label asp-for="ConceptoGasto.AplicaTodasSucursales" class="form-check-label">
+                                Aplica a todas las sucursales
+                            </label>
+                        </div>
+                    </div>
+                    <div id="sucursalesEspecificas" style="display: none;">
+                        <label class="form-label">Seleccionar sucursales específicas:</label>
+                        <div class="row">
+                            @foreach (var sucursal in Model.SucursalesDisponibles)
+                            {
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input type="checkbox" 
+                                               name="SucursalesSeleccionadas" 
+                                               value="@sucursal.Id" 
+                                               class="form-check-input" 
+                                               id="sucursal_@sucursal.Id">
+                                        <label class="form-check-label" for="sucursal_@sucursal.Id">
+                                            <i class="bi bi-building me-1"></i>@sucursal.Name
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Etiquetas -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-tags me-2"></i><strong>Etiquetas</strong>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Etiquetas para búsqueda</label>
+                        <input type="text" id="tagInput" class="form-control" placeholder="Escribe una etiqueta y presiona Enter">
+                        <div class="form-text">Facilita la búsqueda del concepto</div>
+                    </div>
+                    <div id="tagsContainer" class="mb-3">
+                        <!-- Tags se cargan dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estado -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-toggle-on me-2"></i><strong>Estado</strong>
+                </div>
+                <div class="card-body">
+                    <div class="form-check">
+                        <input asp-for="ConceptoGasto.IsActive" class="form-check-input" checked>
+                        <label asp-for="ConceptoGasto.IsActive" class="form-check-label">
+                            Concepto Activo
+                        </label>
+                        <div class="form-text">Los conceptos inactivos no aparecen en formularios de gastos</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="d-flex gap-2 mb-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle me-1"></i>Crear Concepto
+                </button>
+                <button type="button" class="btn btn-info" onclick="crearYNuevo()">
+                    <i class="bi bi-plus-square me-1"></i>Crear y Nuevo
+                </button>
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Panel de Ayuda -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-lightbulb me-2"></i><strong>Consejos</strong>
+            </div>
+            <div class="card-body">
+                <h6><i class="bi bi-check-circle me-1"></i>Información requerida:</h6>
+                <ul class="small">
+                    <li><strong>Código único</strong> para identificar el concepto</li>
+                    <li><strong>Nombre descriptivo</strong> del tipo de gasto</li>
+                    <li><strong>Categoría</strong> para organizar los conceptos</li>
+                </ul>
+                
+                <h6><i class="bi bi-gear me-1"></i>Configuración opcional:</h6>
+                <ul class="small">
+                    <li>Descripción detallada</li>
+                    <li>Límites financieros</li>
+                    <li>Niveles de autorización</li>
+                    <li>Sucursales específicas</li>
+                    <li>Etiquetas para búsqueda</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Categorías Disponibles</strong>
+            </div>
+            <div class="card-body">
+                <div class="small">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-info me-2">Servicios</span>
+                        <span>Gastos de servicios básicos</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-success me-2">Insumos</span>
+                        <span>Productos y materiales</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-warning me-2">Mantenimiento</span>
+                        <span>Reparaciones y mantto.</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-secondary me-2">Administrativo</span>
+                        <span>Gastos de oficina</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-primary me-2">Marketing</span>
+                        <span>Publicidad y promoción</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-danger me-2">RRHH</span>
+                        <span>Recursos humanos</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-dark me-2">Varios</span>
+                        <span>Otros gastos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-shuffle me-2"></i><strong>Generador de Códigos</strong>
+            </div>
+            <div class="card-body">
+                <p class="small">El botón <i class="bi bi-shuffle"></i> al lado del código genera códigos automáticamente basados en:</p>
+                <ul class="small">
+                    <li><strong>Categoría seleccionada</strong></li>
+                    <li><strong>Correlativo automático</strong></li>
+                    <li><strong>Formato: CATXXX</strong></li>
+                </ul>
+                <div class="examples small">
+                    <strong>Ejemplos:</strong>
+                    <div>ADMIN001, INSUM005, MANT003</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        let tags = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Control de sucursales
+            const aplicaTodasCheck = document.getElementById('aplicaTodasCheck');
+            const sucursalesEspecificas = document.getElementById('sucursalesEspecificas');
+            
+            aplicaTodasCheck.addEventListener('change', function() {
+                sucursalesEspecificas.style.display = this.checked ? 'none' : 'block';
+            });
+            
+            // Manejo de etiquetas
+            const tagInput = document.getElementById('tagInput');
+            tagInput.addEventListener('keypress', function(e) {
+                e.preventDefault();
+                if (e.key === 'Enter') {
+                    agregarTag(this.value.trim());
+                    this.value = '';
+                }
+            });
+            
+            // Auto-generar código cuando cambie la categoría
+            const categoriaSelect = document.getElementById('categoriaSelect');
+            categoriaSelect.addEventListener('change', function() {
+                if (this.value && !document.getElementById('ConceptoGasto_Codigo').value) {
+                    generarCodigo();
+                }
+            });
+        });
+        
+        function generarCodigo() {
+            const categoria = document.getElementById('categoriaSelect').value;
+            if (!categoria) {
+                alert('Primero selecciona una categoría');
+                return;
+            }
+            
+            const prefijos = {
+                'Servicios': 'SERV',
+                'Insumos': 'INSUM',
+                'Mantenimiento': 'MANT',
+                'Administrativo': 'ADMIN',
+                'Marketing': 'MARK',
+                'Recursos Humanos': 'RRHH',
+                'Varios': 'VAR'
+            };
+            
+            const prefijo = prefijos[categoria] || 'GEN';
+            const numero = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
+            const codigo = prefijo + numero;
+            
+            document.getElementById('ConceptoGasto_Codigo').value = codigo;
+        }
+        
+        function agregarTag(tag) {
+            if (tag && !tags.includes(tag)) {
+                tags.push(tag);
+                actualizarTagsDisplay();
+            }
+        }
+        
+        function eliminarTag(tag) {
+            tags = tags.filter(t => t !== tag);
+            actualizarTagsDisplay();
+        }
+        
+        function actualizarTagsDisplay() {
+            const container = document.getElementById('tagsContainer');
+            container.innerHTML = tags.map(tag => 
+                `<span class="badge bg-primary me-1 mb-1">
+                    #${tag} 
+                    <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.7em;" onclick="eliminarTag('${tag}')"></button>
+                </span>`
+            ).join('');
+            
+            // Actualizar campos hidden para envío
+            const existingInputs = document.querySelectorAll('input[name="TagsInput"]');
+            existingInputs.forEach(input => input.remove());
+            
+            tags.forEach(tag => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'TagsInput';
+                input.value = tag;
+                document.getElementById('createConceptoForm').appendChild(input);
+            });
+        }
+        
+        function crearYNuevo() {
+            const form = document.getElementById('createConceptoForm');
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'CreateAndNew';
+            input.value = 'true';
+            form.appendChild(input);
+            form.submit();
+        }
+    </script>
+}

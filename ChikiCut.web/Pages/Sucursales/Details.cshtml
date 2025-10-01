@@ -1,0 +1,142 @@
+﻿@page "{id:long?}"
+@model ChikiCut.web.Pages.Sucursales.DetailsModel
+@using ChikiCut.web.Extensions
+@using ChikiCut.web.Helpers
+@{
+    ViewData["Title"] = "Detalles de sucursal";
+}
+
+<h1>Detalles</h1>
+
+@if (Model.Sucursal == null)
+{
+    <div class="alert alert-warning">
+        <h4>Sucursal no encontrada</h4>
+        <p>La sucursal que está buscando no existe o ha sido eliminada.</p>
+        <a asp-page="./Index" class="btn btn-primary">Volver a la lista</a>
+    </div>
+}
+else
+{
+    <div>
+        <h4>Sucursal</h4>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.Code)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Sucursal!.Code)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.Name)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Sucursal!.Name)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.RazonSocial)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Sucursal!.RazonSocial)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.Rfc)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Sucursal!.Rfc)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.Phone)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Sucursal!.Phone)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.Email)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Sucursal!.Email)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.AddressLine1)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Sucursal!.AddressLine1)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.AddressLine2)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Sucursal!.AddressLine2)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.City)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Sucursal!.City)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.State)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Sucursal!.State)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.PostalCode)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Sucursal!.PostalCode)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.Country)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Sucursal!.Country)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.OpeningHours)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.Raw(Model.Sucursal.GetFormattedOpeningHours())
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.IsActive)
+            </dt>
+            <dd class="col-sm-10">
+                <span class="badge @(Model.Sucursal.IsActive ? "bg-success" : "bg-danger")">
+                    @(Model.Sucursal.IsActive ? "Activa" : "Inactiva")
+                </span>
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.CreatedAt)
+            </dt>
+            <dd class="col-sm-10">
+                @Model.Sucursal.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Sucursal!.UpdatedAt)
+            </dt>
+            <dd class="col-sm-10">
+                @if (Model.Sucursal.UpdatedAt.HasValue)
+                {
+                    @Model.Sucursal.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")
+                }
+                else
+                {
+                    <em>No actualizada</em>
+                }
+            </dd>
+        </dl>
+    </div>
+    <div>
+        <a asp-page="./Edit" asp-route-id="@Model.Sucursal.Id" class="btn btn-primary">Editar</a>
+        <a asp-page="./AsignarProductos" asp-route-id="@Model.Sucursal.Id" class="btn btn-success">
+            <i class="bi bi-grid-3x3-gap me-1"></i>Asignar Productos
+        </a>
+        <a asp-page="./AsignarServicios" asp-route-id="@Model.Sucursal.Id" class="btn btn-warning">
+            <i class="bi bi-scissors me-1"></i>Asignar Servicios
+        </a>
+        <a asp-page="./Index" class="btn btn-secondary">Volver a la lista</a>
+    </div>
+}

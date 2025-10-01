@@ -1,0 +1,359 @@
+@page
+@model ChikiCut.web.Pages.Operaciones.DashboardModel
+@{
+    ViewData["Title"] = "Panel de Operaciones";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1>
+                <i class="bi bi-briefcase-fill me-2 text-success"></i>
+                Panel de Operaciones
+            </h1>
+            <p class="text-muted">Herramientas para las operaciones diarias de la sucursal</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" role="group">
+                <a href="/" class="btn btn-outline-secondary">
+                    <i class="bi bi-house me-1"></i>Hub Principal
+                </a>
+                @if (Model.UserLevel >= 3)
+                {
+                    <a href="/Admin/Dashboard" class="btn btn-outline-primary">
+                        <i class="bi bi-gear me-1"></i>Administración
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Información del Usuario -->
+<div class="alert alert-success d-flex align-items-center mb-4">
+    <i class="bi bi-person-check me-3 fs-4"></i>
+    <div>
+        <strong>Sesión Operativa Activa</strong><br>
+        <small>Usuario: <strong>@Model.UserName</strong> • Rol: <span class="badge bg-white text-success">@Model.UserRole</span> • Acceso: Operaciones</small>
+    </div>
+</div>
+
+<!-- Métricas del Día -->
+<div class="row g-3 mb-5">
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-people display-6 mb-2"></i>
+                <h3 class="card-title">@Model.ClientesHoy</h3>
+                <p class="card-text mb-0">Clientes Atendidos Hoy</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar-check display-6 mb-2"></i>
+                <h3 class="card-title">@Model.CitasHoy</h3>
+                <p class="card-text mb-0">Citas Programadas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-cash-coin display-6 mb-2"></i>
+                <h3 class="card-title">$@Model.VentasHoy.ToString("N2")</h3>
+                <p class="card-text mb-0">Ventas de Hoy</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-warning text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-scissors display-6 mb-2"></i>
+                <h3 class="card-title">@Model.ServiciosRealizados</h3>
+                <p class="card-text mb-0">Servicios Realizados</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECCIÓN: ATENCIÓN AL CLIENTE -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h3><i class="bi bi-people-fill me-2 text-primary"></i>Atención al Cliente</h3>
+        <p class="text-muted">Gestión de clientes y programación de servicios</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-success">
+            <div class="card-body text-center">
+                <i class="bi bi-person-hearts display-4 text-success mb-3"></i>
+                <h5 class="card-title">Gestión de Clientes</h5>
+                <p class="card-text">Registro, búsqueda y administración de la base de clientes</p>
+                <div class="d-grid">
+                    <a href="/Operaciones/Clientes" class="btn btn-success">
+                        <i class="bi bi-person-plus me-1"></i>Administrar Clientes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar-check display-4 text-primary mb-3"></i>
+                <h5 class="card-title">Agenda y Citas</h5>
+                <p class="card-text">Programación de servicios y control de horarios</p>
+                <div class="d-grid">
+                    <button class="btn btn-primary" disabled>
+                        <i class="bi bi-calendar-plus me-1"></i>Próximamente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-person-workspace display-4 text-info mb-3"></i>
+                <h5 class="card-title">Mi Agenda Personal</h5>
+                <p class="card-text">Vista personalizada de tus citas y servicios</p>
+                <div class="d-grid">
+                    <button class="btn btn-info" disabled>
+                        <i class="bi bi-calendar-week me-1"></i>Próximamente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECCIÓN: VENTAS Y SERVICIOS -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h3><i class="bi bi-cash-register me-2 text-success"></i>Ventas y Servicios</h3>
+        <p class="text-muted">Procesamiento de ventas y registro de servicios</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-success">
+            <div class="card-body text-center">
+                <i class="bi bi-cash-register display-4 text-success mb-3"></i>
+                <h5 class="card-title">Punto de Venta</h5>
+                <p class="card-text">Registro de servicios realizados y venta de productos</p>
+                <div class="d-grid">
+                    <button class="btn btn-success" disabled>
+                        <i class="bi bi-calculator me-1"></i>Próximamente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-receipt display-4 text-secondary mb-3"></i>
+                <h5 class="card-title">Historial de Ventas</h5>
+                <p class="card-text">Consulta de transacciones y servicios realizados</p>
+                <div class="d-grid">
+                    <button class="btn btn-secondary" disabled>
+                        <i class="bi bi-clock-history me-1"></i>Próximamente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    @if (Model.UserLevel >= 2)
+    {
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-wallet display-4 text-warning mb-3"></i>
+                    <h5 class="card-title">Caja del Día</h5>
+                    <p class="card-text">Control de efectivo, apertura y corte de caja</p>
+                    <div class="d-grid">
+                        <button class="btn btn-warning" disabled>
+                            <i class="bi bi-safe me-1"></i>Próximamente
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- SECCIÓN: INVENTARIO -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h3><i class="bi bi-boxes me-2 text-info"></i>Control de Inventario</h3>
+        <p class="text-muted">Gestión de stock y productos de la sucursal</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-boxes display-4 text-info mb-3"></i>
+                <h5 class="card-title">Stock Local</h5>
+                <p class="card-text">Consulta y control del inventario de la sucursal</p>
+                <div class="d-grid">
+                    <button class="btn btn-info" disabled>
+                        <i class="bi bi-box-seam me-1"></i>Próximamente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-truck display-4 text-primary mb-3"></i>
+                <h5 class="card-title">Recepción de Mercancía</h5>
+                <p class="card-text">Registro de entradas de productos al inventario</p>
+                <div class="d-grid">
+                    <button class="btn btn-primary" disabled>
+                        <i class="bi bi-truck me-1"></i>Próximamente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-clipboard-check display-4 text-secondary mb-3"></i>
+                <h5 class="card-title">Conteo Físico</h5>
+                <p class="card-text">Herramientas para inventarios y ajustes de stock</p>
+                <div class="d-grid">
+                    <button class="btn btn-secondary" disabled>
+                        <i class="bi bi-list-check me-1"></i>Próximamente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.UserLevel >= 2)
+{
+    <!-- SECCIÓN: REPORTES Y FINANZAS -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3><i class="bi bi-graph-up me-2 text-warning"></i>Reportes y Finanzas</h3>
+            <p class="text-muted">Análisis de desempeño y control financiero (Solo Supervisores+)</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-coin display-4 text-danger mb-3"></i>
+                    <h5 class="card-title">Registro de Gastos</h5>
+                    <p class="card-text">Control de gastos operativos de la sucursal</p>
+                    <div class="d-grid">
+                        <a href="/Operaciones/Gastos" class="btn btn-danger">
+                            <i class="bi bi-cash-stack me-1"></i>Captura de Gasto
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up display-4 text-warning mb-3"></i>
+                    <h5 class="card-title">Reportes Operativos</h5>
+                    <p class="card-text">Análisis de ventas, servicios y desempeño</p>
+                    <div class="d-grid">
+                        <button class="btn btn-warning" disabled>
+                            <i class="bi bi-bar-chart me-1"></i>Próximamente
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-week display-4 text-info mb-3"></i>
+                    <h5 class="card-title">Resumen Diario</h5>
+                    <p class="card-text">Vista consolidada de las operaciones del día</p>
+                    <div class="d-grid">
+                        <button class="btn btn-info" disabled>
+                            <i class="bi bi-file-earmark-text me-1"></i>Próximamente
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Panel de Información -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Información del Panel Operativo
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <h6 class="text-primary">?? Clientes</h6>
+                        <ul class="small">
+                            <li>Registro de nuevos clientes</li>
+                            <li>Búsqueda y edición</li>
+                            <li>Historial de servicios</li>
+                            <li>Programa de lealtad</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="text-success">?? Ventas</h6>
+                        <ul class="small">
+                            <li>Punto de venta integrado</li>
+                            <li>Registro de servicios</li>
+                            <li>Métodos de pago</li>
+                            <li>Facturación automática</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="text-info">?? Inventario</h6>
+                        <ul class="small">
+                            <li>Control de stock local</li>
+                            <li>Entradas de mercancía</li>
+                            <li>Alertas de reabastecimiento</li>
+                            <li>Conteos físicos</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="text-warning">?? Reportes</h6>
+                        <ul class="small">
+                            <li>Ventas diarias</li>
+                            <li>Servicios más solicitados</li>
+                            <li>Control de gastos</li>
+                            <li>Indicadores de desempeño</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

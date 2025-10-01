@@ -1,0 +1,275 @@
+@page
+@model ChikiCut.web.Pages.ConceptosGasto.DeleteModel
+@{
+    ViewData["Title"] = Model.TipoOperacion == "desactivar" ? "Desactivar Concepto" : "Activar Concepto";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1>
+                <i class="bi bi-@(Model.TipoOperacion == "desactivar" ? "pause-circle" : "play-circle") me-2"></i>
+                @(Model.TipoOperacion == "desactivar" ? "Desactivar" : "Activar") Concepto
+            </h1>
+            <p class="text-muted">@Model.ConceptoGasto.Nombre</p>
+        </div>
+        <div class="col-auto">
+            <a asp-page="Details" asp-route-id="@Model.ConceptoGasto.Id" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Volver
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Información del concepto -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Información del Concepto</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Código:</dt>
+                            <dd class="col-sm-8"><span class="badge bg-primary">@Model.ConceptoGasto.Codigo</span></dd>
+                            <dt class="col-sm-4">Nombre:</dt>
+                            <dd class="col-sm-8"><strong>@Model.ConceptoGasto.Nombre</strong></dd>
+                            <dt class="col-sm-4">Categoría:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge @(Model.ConceptoGasto.Categoria switch {
+                                    "Servicios" => "bg-info",
+                                    "Insumos" => "bg-success", 
+                                    "Mantenimiento" => "bg-warning text-dark",
+                                    "Administrativo" => "bg-secondary",
+                                    "Marketing" => "bg-primary",
+                                    "Recursos Humanos" => "bg-danger",
+                                    _ => "bg-dark"
+                                })">
+                                    @Model.ConceptoGasto.Categoria
+                                </span>
+                            </dd>
+                            <dt class="col-sm-4">Estado Actual:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge @(Model.ConceptoGasto.IsActive ? "bg-success" : "bg-secondary")">
+                                    @(Model.ConceptoGasto.IsActive ? "Activo" : "Inactivo")
+                                </span>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-5">Límite:</dt>
+                            <dd class="col-sm-7">
+                                @if (Model.ConceptoGasto.LimiteMaximo.HasValue)
+                                {
+                                    <span class="text-warning fw-bold">@Model.ConceptoGasto.LimiteMaximo.Value.ToString("C")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin límite</span>
+                                }
+                            </dd>
+                            <dt class="col-sm-5">Autorización:</dt>
+                            <dd class="col-sm-7">
+                                @if (Model.ConceptoGasto.RequiereAutorizacion)
+                                {
+                                    <span class="text-warning">
+                                        <i class="bi bi-lock-fill me-1"></i>Nivel @Model.ConceptoGasto.NivelAutorizacionRequerido
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-success">
+                                        <i class="bi bi-check-circle me-1"></i>No requiere
+                                    </span>
+                                }
+                            </dd>
+                            <dt class="col-sm-5">Comprobante:</dt>
+                            <dd class="col-sm-7">
+                                @if (Model.ConceptoGasto.RequiereComprobante)
+                                {
+                                    <span class="text-primary">
+                                        <i class="bi bi-file-earmark-text me-1"></i>Obligatorio
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        <i class="bi bi-file-earmark me-1"></i>Opcional
+                                    </span>
+                                }
+                            </dd>
+                            <dt class="col-sm-5">Sucursales:</dt>
+                            <dd class="col-sm-7">
+                                @if (Model.ConceptoGasto.AplicaTodasSucursales)
+                                {
+                                    <span class="text-success">
+                                        <i class="bi bi-buildings me-1"></i><text>Todas</text>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-info">
+                                        <i class="bi bi-building me-1"></i><text>Específicas</text>
+                                    </span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.ConceptoGasto.Descripcion))
+                {
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <dt>Descripción:</dt>
+                            <dd class="mt-2">@Model.ConceptoGasto.Descripcion</dd>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Advertencias -->
+        @if (Model.TipoOperacion == "desactivar")
+        {
+            <div class="card mb-4 border-warning">
+                <div class="card-header bg-warning bg-opacity-10">
+                    <i class="bi bi-exclamation-triangle me-2"></i><strong>Advertencias</strong>
+                </div>
+                <div class="card-body">
+                    @if (Model.TieneGastosAsociados)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-circle me-2"></i>
+                            <strong>¡Atención!</strong> Este concepto tiene gastos asociados. Desactivarlo puede afectar reportes y registros existentes.
+                        </div>
+                    }
+                    
+                    <ul class="mb-0">
+                        <li>El concepto <strong>no se eliminará</strong> del sistema</li>
+                        <li>Se marcará como <strong>inactivo</strong> y no aparecerá en formularios nuevos</li>
+                        <li>Los gastos existentes con este concepto <strong>se mantendrán</strong></li>
+                        <li>Puedes <strong>reactivarlo</strong> en cualquier momento</li>
+                        <li>Los reportes históricos <strong>seguirán funcionando</strong> normalmente</li>
+                    </ul>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card mb-4 border-success">
+                <div class="card-header bg-success bg-opacity-10">
+                    <i class="bi bi-check-circle me-2"></i><strong>Información</strong>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li>El concepto se marcará como <strong>activo</strong></li>
+                        <li>Aparecerá nuevamente en los formularios de gastos</li>
+                        <li>Estará disponible para <strong>nuevos registros</strong></li>
+                        <li>Mantendrá toda su <strong>configuración anterior</strong></li>
+                    </ul>
+                </div>
+            </div>
+        }
+
+        <!-- Explicación de la acción -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-gear me-2"></i><strong>¿Qué pasará al @Model.TipoOperacion este concepto?</strong>
+            </div>
+            <div class="card-body">
+                @if (Model.TipoOperacion == "desactivar")
+                {
+                    <ul>
+                        <li><strong>El concepto se marcará como inactivo</strong> en el sistema</li>
+                        <li><strong>No aparecerá</strong> en formularios de gastos nuevos</li>
+                        <li><strong>Los gastos existentes se mantendrán</strong> intactos</li>
+                        <li><strong>Se puede reactivar</strong> en cualquier momento</li>
+                        <li><strong>No se eliminan datos</strong> - solo se oculta</li>
+                    </ul>
+                }
+                else
+                {
+                    <ul>
+                        <li><strong>El concepto se marcará como activo</strong> en el sistema</li>
+                        <li><strong>Estará disponible</strong> para nuevos gastos</li>
+                        <li><strong>Recuperará su funcionalidad</strong> completa</li>
+                        <li><strong>La configuración se mantendrá</strong> como estaba antes</li>
+                    </ul>
+                }
+            </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="d-flex gap-2">
+            <form method="post" class="d-inline">
+                <button type="submit" class="btn @(Model.TipoOperacion == "desactivar" ? "btn-warning" : "btn-success")" 
+                        onclick="return confirm('¿Estás seguro de que deseas @Model.TipoOperacion este concepto?')">
+                    <i class="bi bi-@(Model.TipoOperacion == "desactivar" ? "pause" : "play") me-1"></i>
+                    @(Model.TipoOperacion == "desactivar" ? "Desactivar" : "Activar") Concepto
+                </button>
+            </form>
+            
+            <a asp-page="Details" asp-route-id="@Model.ConceptoGasto.Id" class="btn btn-info">
+                <i class="bi bi-eye me-1"></i>Ver Detalles
+            </a>
+            <a asp-page="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Cancelar
+            </a>
+        </div>
+    </div>
+
+    <!-- Panel lateral -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-shield-exclamation me-2"></i><strong>Información de Seguridad</strong>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-@(Model.TipoOperacion == "desactivar" ? "warning" : "success") alert-sm">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Operación Segura:</strong> Esta acción es reversible y no elimina datos.
+                </div>
+                
+                <h6><i class="bi bi-check-circle me-1"></i>Lo que NO cambia:</h6>
+                <ul class="small">
+                    <li>Configuración del concepto</li>
+                    <li>Historial de gastos</li>
+                    <li>Reportes existentes</li>
+                    <li>Auditoría y logs</li>
+                </ul>
+                
+                <h6><i class="bi bi-arrow-repeat me-1"></i>Reversibilidad:</h6>
+                <p class="small mb-0">
+                    Puedes cambiar el estado del concepto las veces que necesites. 
+                    Es una operación completamente segura.
+                </p>
+            </div>
+        </div>
+
+        @if (Model.ConceptoGasto.UsuarioCreador != null)
+        {
+            <div class="card mt-3">
+                <div class="card-header">
+                    <i class="bi bi-person me-2"></i><strong>Información de Creación</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row small">
+                        <dt class="col-sm-5">Creado por:</dt>
+                        <dd class="col-sm-7">@Model.ConceptoGasto.UsuarioCreador.NombreCompleto</dd>
+                        <dt class="col-sm-5">Fecha:</dt>
+                        <dd class="col-sm-7">@Model.ConceptoGasto.CreatedAt.ToString("dd/MM/yyyy")</dd>
+                        @if (Model.ConceptoGasto.UpdatedAt.HasValue)
+                        {
+                            <dt class="col-sm-5">Última modificación:</dt>
+                            <dd class="col-sm-7">@Model.ConceptoGasto.UpdatedAt.Value.ToString("dd/MM/yyyy")</dd>
+                        }
+                    </dl>
+                </div>
+            </div>
+        }
+    </div>
+</div>

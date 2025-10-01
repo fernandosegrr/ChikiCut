@@ -1,0 +1,183 @@
+@page
+@model ChikiCut.web.Pages.Usuarios.DeleteModel
+@{
+    ViewData["Title"] = "Gestionar Usuario";
+    var isDesactivar = Model.TipoOperacion == "desactivar";
+    var actionText = isDesactivar ? "Desactivar" : "Reactivar";
+    var buttonClass = isDesactivar ? "btn-warning" : "btn-success";
+    var iconClass = isDesactivar ? "bi-person-x" : "bi-person-check";
+}
+
+<div class="page-header mb-4">
+    <h1><i class="@iconClass me-2"></i>@actionText Usuario</h1>
+    <p class="text-muted">
+        @if (isDesactivar)
+        {
+            <span>¿Está seguro de que desea desactivar este usuario?</span>
+        }
+        else
+        {
+            <span>¿Está seguro de que desea reactivar este usuario?</span>
+        }
+    </p>
+</div>
+
+<!-- Información del usuario -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-person-circle me-2"></i><strong>Información del Usuario</strong>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-5">Código:</dt>
+                    <dd class="col-sm-7"><span class="badge bg-secondary">@Model.Usuario.CodigoUsuario</span></dd>
+                    <dt class="col-sm-5">Email:</dt>
+                    <dd class="col-sm-7">@Model.Usuario.Email</dd>
+                    <dt class="col-sm-5">Empleado:</dt>
+                    <dd class="col-sm-7">@Model.Usuario.NombreCompleto</dd>
+                    <dt class="col-sm-5">Puesto:</dt>
+                    <dd class="col-sm-7">
+                        <span class="badge bg-info">@Model.Usuario.Empleado.PuestoNavegacion?.Nombre</span>
+                    </dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-5">Rol:</dt>
+                    <dd class="col-sm-7">
+                        <span class="badge @(Model.Usuario.Rol.NivelAcceso switch 
+                        {
+                            5 => "bg-danger",
+                            4 => "bg-warning", 
+                            3 => "bg-info",
+                            2 => "bg-primary",
+                            1 => "bg-secondary",
+                            _ => "bg-dark"
+                        })">
+                            @Model.Usuario.Rol.Nombre
+                        </span>
+                    </dd>
+                    <dt class="col-sm-5">Sucursal:</dt>
+                    <dd class="col-sm-7">@Model.Usuario.SucursalNombre</dd>
+                    <dt class="col-sm-5">Estado Actual:</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.Usuario.EstaBloqueado)
+                        {
+                            <span class="badge bg-warning">Bloqueado</span>
+                        }
+                        else if (Model.Usuario.IsActive)
+                        {
+                            <span class="badge bg-success">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inactivo</span>
+                        }
+                    </dd>
+                    <dt class="col-sm-5">Último Acceso:</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.Usuario.UltimoAcceso.HasValue)
+                        {
+                            <small>@Model.Usuario.UltimoAcceso.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                        }
+                        else
+                        {
+                            <small class="text-muted">Nunca</small>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mensajes y advertencias -->
+@if (Model.TieneRelaciones)
+{
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <strong>Advertencia:</strong> @Model.MensajeRelaciones
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-info-circle me-2"></i><strong>Consideraciones Importantes</strong>
+        </div>
+        <div class="card-body">
+            <p>Antes de desactivar este usuario, considere lo siguiente:</p>
+            <ul>
+                <li><strong>Usuarios Administradores:</strong> Asegúrese de que haya al menos otro administrador activo</li>
+                <li><strong>Usuarios Gerenciales:</strong> Verifique que haya cobertura gerencial en la sucursal</li>
+                <li><strong>Usuarios Creados:</strong> Los usuarios que este usuario haya creado seguirán funcionando normalmente</li>
+            </ul>
+            
+            @if (Model.Usuario.Rol.NivelAcceso == 5)
+            {
+                <div class="alert alert-danger mt-3">
+                    <strong>¡ATENCIÓN!</strong> Este es un usuario administrador. Desactivarlo puede afectar la gestión del sistema.
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<form method="post" class="mt-4">
+    <input type="hidden" asp-for="Usuario.Id" />
+    
+    @if (!Model.TieneRelaciones || !isDesactivar)
+    {
+        @if (isDesactivar)
+        {
+            <div class="alert alert-warning" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Información:</strong> El usuario será desactivado pero sus datos se conservarán en el sistema. 
+                No podrá iniciar sesión hasta ser reactivado.
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Información:</strong> El usuario será reactivado y podrá iniciar sesión normalmente. 
+                Se limpiarán los intentos fallidos y bloqueos existentes.
+            </div>
+        }
+        
+        <button type="submit" class="btn @buttonClass">
+            <i class="@iconClass me-1"></i>Sí, @actionText Usuario
+        </button>
+    }
+    else
+    {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-shield-exclamation me-2"></i>
+            <strong>Operación Restringida:</strong> Por razones de seguridad, no se recomienda desactivar este usuario en este momento.
+            Si es absolutamente necesario, contacte con otro administrador del sistema.
+        </div>
+    }
+    
+    <a asp-page="Index" class="btn btn-secondary @(Model.TieneRelaciones && isDesactivar ? "ms-0" : "ms-2")">
+        <i class="bi bi-arrow-left me-1"></i>@(Model.TieneRelaciones && isDesactivar ? "Volver" : "Cancelar")
+    </a>
+</form>
+
+<!-- Información adicional sobre desactivación -->
+@if (!Model.TieneRelaciones || !isDesactivar)
+{
+    <div class="card mt-4 bg-light">
+        <div class="card-body">
+            <h6 class="card-title"><i class="bi bi-lightbulb me-2"></i>¿Por qué no eliminamos completamente?</h6>
+            <p class="card-text small mb-0">
+                Los usuarios nunca se eliminan completamente del sistema para preservar:
+            </p>
+            <ul class="small mb-0 mt-2">
+                <li>Historial de accesos y operaciones</li>
+                <li>Trazabilidad de cambios realizados</li>
+                <li>Auditoría de seguridad</li>
+                <li>Relaciones con otros datos del sistema</li>
+            </ul>
+        </div>
+    </div>
+}

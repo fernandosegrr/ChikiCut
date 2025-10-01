@@ -1,0 +1,222 @@
+@page
+@model ChikiCut.web.Pages.Puestos.DetailsModel
+@{
+    ViewData["Title"] = "Detalles del Puesto";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1><i class="bi bi-person-workspace me-2"></i>@Model.Puesto!.Nombre</h1>
+            <p class="text-muted mb-0">
+                <span class="badge @(Model.Puesto.NivelJerarquico switch 
+                {
+                    1 => "bg-secondary",
+                    2 => "bg-primary", 
+                    3 => "bg-info",
+                    4 => "bg-warning",
+                    _ => "bg-dark"
+                })">
+                    @Model.Puesto.NivelDescripcion
+                </span>
+                <span class="badge @(Model.Puesto.IsActive ? "bg-success" : "bg-danger") ms-2">
+                    @(Model.Puesto.IsActive ? "Activo" : "Inactivo")
+                </span>
+            </p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" role="group">
+                <a asp-page="Edit" asp-route-id="@Model.Puesto.Id" class="btn btn-primary">
+                    <i class="bi bi-pencil me-1"></i>Editar
+                </a>
+                <a asp-page="Delete" asp-route-id="@Model.Puesto.Id" 
+                   class="btn @(Model.Puesto.IsActive ? "btn-outline-warning" : "btn-outline-success")">
+                    <i class="bi @(Model.Puesto.IsActive ? "bi-x-circle" : "bi-check-circle") me-1"></i>
+                    @(Model.Puesto.IsActive ? "Desactivar" : "Reactivar")
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Información del Puesto -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Información del Puesto</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-5">Nombre:</dt>
+                            <dd class="col-sm-7">@Model.Puesto.Nombre</dd>
+                            <dt class="col-sm-5">Nivel Jerárquico:</dt>
+                            <dd class="col-sm-7">
+                                <span class="badge @(Model.Puesto.NivelJerarquico switch 
+                                {
+                                    1 => "bg-secondary",
+                                    2 => "bg-primary", 
+                                    3 => "bg-info",
+                                    4 => "bg-warning",
+                                    _ => "bg-dark"
+                                })">
+                                    @Model.Puesto.NivelDescripcion
+                                </span>
+                            </dd>
+                            <dt class="col-sm-5">Requiere Experiencia:</dt>
+                            <dd class="col-sm-7">
+                                @if (Model.Puesto.RequiereExperiencia)
+                                {
+                                    <span class="badge bg-warning">Sí</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">No</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-5">Rango Salarial:</dt>
+                            <dd class="col-sm-7">@Model.Puesto.RangoSalarial</dd>
+                            <dt class="col-sm-5">Estado:</dt>
+                            <dd class="col-sm-7">
+                                <span class="badge @(Model.Puesto.IsActive ? "bg-success" : "bg-danger")">
+                                    @(Model.Puesto.IsActive ? "Activo" : "Inactivo")
+                                </span>
+                            </dd>
+                            <dt class="col-sm-5">Empleados Asignados:</dt>
+                            <dd class="col-sm-7">
+                                <span class="badge bg-info">@Model.Puesto.Empleados.Count</span>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Puesto.Descripcion))
+                {
+                    <hr>
+                    <h6>Descripción:</h6>
+                    <p class="text-muted">@Model.Puesto.Descripcion</p>
+                }
+            </div>
+        </div>
+
+        <!-- Empleados Asignados -->
+        @if (Model.Puesto.Empleados.Any())
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-people me-2"></i><strong>Empleados con este Puesto (@Model.Puesto.Empleados.Count)</strong>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Empleado</th>
+                                    <th>Código</th>
+                                    <th>Sucursal</th>
+                                    <th>Fecha Ingreso</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var empleado in Model.Puesto.Empleados.OrderBy(e => e.ApellidoPaterno))
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">@empleado.NombreCompleto</div>
+                                            @if (!string.IsNullOrEmpty(empleado.Alias))
+                                            {
+                                                <small class="text-muted">(@empleado.Alias)</small>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">@empleado.CodigoEmpleado</span>
+                                        </td>
+                                        <td>@empleado.Sucursal?.Name</td>
+                                        <td>@empleado.FechaIngreso.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            <a href="/Empleados/Details/@empleado.Id" class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card mb-4">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-people display-4 text-muted d-block mb-3"></i>
+                    <h5 class="text-muted">No hay empleados asignados a este puesto</h5>
+                    <p class="text-muted">Los empleados aparecerán aquí cuando se les asigne este puesto</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Panel lateral con información adicional -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-clock me-2"></i><strong>Información del Sistema</strong>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-6">Creado:</dt>
+                    <dd class="col-sm-6">
+                        <small>@Model.Puesto.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                    </dd>
+                    @if (Model.Puesto.UpdatedAt.HasValue)
+                    {
+                        <dt class="col-sm-6">Última modificación:</dt>
+                        <dd class="col-sm-6">
+                            <small>@Model.Puesto.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                        </dd>
+                    }
+                </dl>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-graph-up me-2"></i><strong>Estadísticas</strong>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="card bg-light">
+                            <div class="card-body py-2">
+                                <h4 class="text-primary mb-0">@Model.Puesto.Empleados.Count</h4>
+                                <small class="text-muted">Empleados</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card bg-light">
+                            <div class="card-body py-2">
+                                <h4 class="text-info mb-0">@Model.Puesto.Empleados.Select(e => e.SucursalId).Distinct().Count()</h4>
+                                <small class="text-muted">Sucursales</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-page="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Volver a la Lista
+    </a>
+</div>

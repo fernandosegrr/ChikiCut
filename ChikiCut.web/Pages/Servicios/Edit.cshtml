@@ -1,0 +1,318 @@
+@page
+@model ChikiCut.web.Pages.Servicios.EditModel
+@{
+    ViewData["Title"] = "Editar Servicio";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1><i class="bi bi-pencil me-2"></i>Editar Servicio</h1>
+            <p class="text-muted">Modifica la información del servicio: @Model.Servicio.Nombre</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" role="group">
+                <a asp-page="Details" asp-route-id="@Model.Servicio.Id" class="btn btn-info">
+                    <i class="bi bi-eye me-1"></i>Ver Detalles
+                </a>
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Volver a Lista
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="post" id="editServicioForm">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <input type="hidden" asp-for="Servicio.Id" />
+            <input type="hidden" asp-for="Servicio.CreatedAt" />
+            <input type="hidden" asp-for="Servicio.CreatedBy" />
+
+            <!-- Información Básica -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-info-circle me-2"></i><strong>Información Básica</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Servicio.Codigo" class="form-label">Código *</label>
+                                <input asp-for="Servicio.Codigo" class="form-control" maxlength="20">
+                                <span asp-validation-for="Servicio.Codigo" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label asp-for="Servicio.Nombre" class="form-label">Nombre del Servicio *</label>
+                                <input asp-for="Servicio.Nombre" class="form-control" maxlength="100">
+                                <span asp-validation-for="Servicio.Nombre" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label asp-for="Servicio.Descripcion" class="form-label">Descripción</label>
+                                <textarea asp-for="Servicio.Descripcion" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Servicio.Descripcion" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clasificación -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-tags me-2"></i><strong>Clasificación</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Servicio.Categoria" class="form-label">Categoría *</label>
+                                <select asp-for="Servicio.Categoria" class="form-select">
+                                    @foreach (var categoria in ChikiCut.web.Data.Entities.Servicio.Categorias.Lista)
+                                    {
+                                        <option value="@categoria">@categoria</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Servicio.Categoria" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Servicio.Subcategoria" class="form-label">Subcategoría</label>
+                                <select asp-for="Servicio.Subcategoria" class="form-select">
+                                    <option value="">-- Seleccione una subcategoría --</option>
+                                    @foreach (var subcategoria in ChikiCut.web.Data.Entities.Servicio.Subcategorias.Lista)
+                                    {
+                                        <option value="@subcategoria">@subcategoria</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Servicio.Subcategoria" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración del Servicio -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-gear me-2"></i><strong>Configuración del Servicio</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Servicio.PrecioBase" class="form-label">Precio Base *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Servicio.PrecioBase" class="form-control" type="number" step="0.01">
+                                </div>
+                                <span asp-validation-for="Servicio.PrecioBase" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Servicio.DuracionEstimada" class="form-label">Duración (minutos) *</label>
+                                <input asp-for="Servicio.DuracionEstimada" class="form-control" type="number" min="1" max="480">
+                                <span asp-validation-for="Servicio.DuracionEstimada" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Servicio.ComisionEmpleado" class="form-label">Comisión Empleado (%)</label>
+                                <input asp-for="Servicio.ComisionEmpleado" class="form-control" type="number" step="0.01" min="0" max="100">
+                                <span asp-validation-for="Servicio.ComisionEmpleado" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Servicio.NivelDificultad" class="form-label">Nivel de Dificultad</label>
+                                <select asp-for="Servicio.NivelDificultad" class="form-select">
+                                    <option value="1">1 - Básico</option>
+                                    <option value="2">2 - Intermedio</option>
+                                    <option value="3">3 - Avanzado</option>
+                                    <option value="4">4 - Experto</option>
+                                    <option value="5">5 - Maestro</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check mb-3 mt-4">
+                                <input asp-for="Servicio.RequiereCita" class="form-check-input">
+                                <label asp-for="Servicio.RequiereCita" class="form-check-label">
+                                    Requiere Cita Previa
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-plus-circle me-2"></i><strong>Información Adicional</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Servicio.ImagenUrl" class="form-label">URL de Imagen</label>
+                                <input asp-for="Servicio.ImagenUrl" class="form-control">
+                                <span asp-validation-for="Servicio.ImagenUrl" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check mb-3 mt-4">
+                                <input asp-for="Servicio.IsActive" class="form-check-input">
+                                <label asp-for="Servicio.IsActive" class="form-check-label">
+                                    Servicio Activo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label asp-for="Servicio.NotasInternas" class="form-label">Notas Internas</label>
+                                <textarea asp-for="Servicio.NotasInternas" class="form-control" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tags -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-tags me-2"></i><strong>Etiquetas</strong>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Etiquetas para búsqueda</label>
+                        <input type="text" id="tagInput" class="form-control" placeholder="Escribe una etiqueta y presiona Enter">
+                    </div>
+                    <div id="tagsContainer" class="mb-3">
+                        <!-- Tags se cargan dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="d-flex gap-2 mb-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i>Guardar Cambios
+                </button>
+                <a asp-page="Details" asp-route-id="@Model.Servicio.Id" class="btn btn-info">
+                    <i class="bi bi-eye me-1"></i>Ver Detalles
+                </a>
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Panel de Ayuda -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Información del Servicio</strong>
+            </div>
+            <div class="card-body">
+                <dl class="row small">
+                    <dt class="col-5">Código:</dt>
+                    <dd class="col-7">@Model.Servicio.Codigo</dd>
+                    <dt class="col-5">Creado:</dt>
+                    <dd class="col-7">@Model.Servicio.CreatedAt.ToString("dd/MM/yyyy")</dd>
+                    @if (Model.Servicio.UpdatedAt.HasValue)
+                    {
+                        <dt class="col-5">Modificado:</dt>
+                        <dd class="col-7">@Model.Servicio.UpdatedAt.Value.ToString("dd/MM/yyyy")</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-lightbulb me-2"></i><strong>Consejos</strong>
+            </div>
+            <div class="card-body">
+                <ul class="small">
+                    <li>Cambiar el <strong>código</strong> puede afectar integraciones externas</li>
+                    <li>El <strong>precio base</strong> es referencial, cada sucursal puede tener precios diferentes</li>
+                    <li>La <strong>duración</strong> ayuda a planificar citas y horarios</li>
+                    <li>El <strong>nivel de dificultad</strong> determina qué empleados pueden realizar el servicio</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        let tags = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TagsSeleccionados));
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar tags existentes
+            actualizarTagsDisplay();
+            
+            // Manejo de etiquetas
+            const tagInput = document.getElementById('tagInput');
+            tagInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    agregarTag(this.value.trim());
+                    this.value = '';
+                }
+            });
+        });
+        
+        function agregarTag(tag) {
+            if (tag && !tags.includes(tag)) {
+                tags.push(tag);
+                actualizarTagsDisplay();
+            }
+        }
+        
+        function eliminarTag(tag) {
+            tags = tags.filter(t => t !== tag);
+            actualizarTagsDisplay();
+        }
+        
+        function actualizarTagsDisplay() {
+            const container = document.getElementById('tagsContainer');
+            container.innerHTML = tags.map(tag => 
+                `<span class="badge bg-primary me-1 mb-1">
+                    #${tag} 
+                    <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.7em;" onclick="eliminarTag('${tag}')"></button>
+                </span>`
+            ).join('');
+            
+            // Actualizar campos hidden para envío
+            const existingInputs = document.querySelectorAll('input[name="TagsSeleccionados"]');
+            existingInputs.forEach(input => input.remove());
+            
+            tags.forEach(tag => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'TagsSeleccionados';
+                input.value = tag;
+                document.getElementById('editServicioForm').appendChild(input);
+            });
+        }
+    </script>
+}

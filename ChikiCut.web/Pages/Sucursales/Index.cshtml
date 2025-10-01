@@ -1,0 +1,225 @@
+﻿@page
+@model ChikiCut.web.Pages.Sucursales.IndexModel
+@using ChikiCut.web.Extensions
+@using ChikiCut.web.Helpers
+
+@{
+    ViewData["Title"] = "Sucursales";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-building me-2"></i>Gestión de Sucursales</h1>
+    <p class="mb-0">Administra todas las sucursales de ChikiCut</p>
+</div>
+
+<div class="row fade-in">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="bi bi-list-ul me-2"></i>
+                    <strong>Lista de Sucursales</strong>
+                </div>
+                <a asp-page="Create" class="btn btn-success">
+                    <i class="bi bi-plus-circle me-1"></i>Nueva Sucursal
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th><i class="bi bi-hash me-1"></i>Código</th>
+                                <th><i class="bi bi-shop me-1"></i>Nombre comercial</th>
+                                <th class="d-none d-md-table-cell"><i class="bi bi-building me-1"></i>Razón social</th>
+                                <th class="d-none d-lg-table-cell"><i class="bi bi-card-text me-1"></i>RFC</th>
+                                <th class="d-none d-md-table-cell"><i class="bi bi-telephone me-1"></i>Teléfono</th>
+                                <th><i class="bi bi-geo-alt me-1"></i>Ciudad</th>
+                                <th><i class="bi bi-toggle-on me-1"></i>Estado</th>
+                                <th class="d-none d-xl-table-cell"><i class="bi bi-clock me-1"></i>Horarios</th>
+                                <th width="200px"><i class="bi bi-gear me-1"></i>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Sucursal)
+                            {
+                                <tr class="slide-up">
+                                    <td>
+                                        <span class="badge bg-primary">@Html.DisplayFor(_ => item.Code)</span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-primary">@Html.DisplayFor(_ => item.Name)</div>
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        <small class="text-muted">@Html.DisplayFor(_ => item.RazonSocial)</small>
+                                    </td>
+                                    <td class="d-none d-lg-table-cell">
+                                        <code class="small">@Html.DisplayFor(_ => item.Rfc)</code>
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        <i class="bi bi-telephone-fill text-success me-1"></i>
+                                        @Html.DisplayFor(_ => item.Phone)
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                        @Html.DisplayFor(_ => item.City)
+                                    </td>
+                                    <td>
+                                        <span class="badge @(item.IsActive ? "bg-success" : "bg-secondary")">
+                                            <i class="bi bi-@(item.IsActive ? "check-circle" : "x-circle") me-1"></i>
+                                            @(item.IsActive ? "Activa" : "Inactiva")
+                                        </span>
+                                    </td>
+                                    <td class="d-none d-xl-table-cell" style="font-size: 0.85em;">
+                                        <div class="text-muted small">
+                                            @Html.Raw(item.GetCompactOpeningHours())
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <!-- Versión con iconos y texto (más clara) -->
+                                        <div class="btn-group-vertical d-xl-none" role="group">
+                                            <a asp-page="Edit" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-outline-primary mb-1">
+                                                <i class="bi bi-pencil-square me-1"></i>Editar
+                                            </a>
+                                            <a asp-page="Details" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-outline-info mb-1">
+                                                <i class="bi bi-eye me-1"></i>Ver
+                                            </a>
+                                            <div class="btn-group" role="group">
+                                                <a asp-page="AsignarProductos" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-outline-success">
+                                                    <i class="bi bi-box-seam me-1"></i>Productos
+                                                </a>
+                                                <a asp-page="AsignarServicios" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-outline-warning">
+                                                    <i class="bi bi-scissors me-1"></i>Servicios
+                                                </a>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Versión compacta para pantallas grandes -->
+                                        <div class="btn-group d-none d-xl-flex" role="group">
+                                            <a asp-page="Edit" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-outline-primary" 
+                                               title="Editar información de la sucursal"
+                                               data-bs-toggle="tooltip">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <a asp-page="Details" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-outline-info" 
+                                               title="Ver detalles completos de la sucursal"
+                                               data-bs-toggle="tooltip">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a asp-page="AsignarProductos" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-outline-success" 
+                                               title="Asignar PRODUCTOS a esta sucursal"
+                                               data-bs-toggle="tooltip">
+                                                <i class="bi bi-box-seam"></i>
+                                            </a>
+                                            <a asp-page="AsignarServicios" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-outline-warning" 
+                                               title="Asignar SERVICIOS a esta sucursal"
+                                               data-bs-toggle="tooltip">
+                                                <i class="bi bi-scissors"></i>
+                                            </a>
+                                            <a asp-page="Delete" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-outline-danger" 
+                                               title="Eliminar sucursal permanentemente"
+                                               data-bs-toggle="tooltip"
+                                               onclick="return confirm('¿Está seguro de que desea eliminar la sucursal @Html.Raw(item.Name?.Replace("'", "\\'"))?');">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                        
+                                        <div class="d-xl-none mt-2">
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock me-1"></i>
+                                                @Html.Raw(item.GetCompactOpeningHours())
+                                            </small>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            @if (!Model.Sucursal.Any())
+                            {
+                                <tr>
+                                    <td colspan="9" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="bi bi-building display-4 d-block mb-3"></i>
+                                            <h5>No hay sucursales registradas</h5>
+                                            <p>Comienza creando tu primera sucursal</p>
+                                            <a asp-page="Create" class="btn btn-primary">
+                                                <i class="bi bi-plus-circle me-1"></i>Crear Primera Sucursal
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @if (Model.Sucursal.Any())
+            {
+                <div class="card-footer bg-light">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Total de sucursales: <strong>@Model.Sucursal.Count()</strong>
+                            </small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <small class="text-muted">
+                                <i class="bi bi-check-circle text-success me-1"></i>
+                                Activas: <strong>@Model.Sucursal.Count(s => s.IsActive)</strong>
+                            </small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <small class="text-muted">
+                                <strong>Acciones:</strong>
+                                <i class="bi bi-pencil-square text-primary me-1" title="Editar"></i>
+                                <i class="bi bi-eye text-info me-1" title="Ver detalles"></i>
+                                <i class="bi bi-box-seam text-success me-1" title="Productos"></i>
+                                <i class="bi bi-scissors text-warning me-1" title="Servicios"></i>
+                                <i class="bi bi-trash text-danger" title="Eliminar"></i>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Agregar animaciones y efectos interactivos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animar las filas de la tabla
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach((row, index) => {
+                row.style.animationDelay = `${index * 0.1}s`;
+            });
+
+            // Inicializar todos los tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"], [title]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl, {
+                    placement: 'top',
+                    trigger: 'hover focus'
+                });
+            });
+
+            // Mostrar ayuda contextual
+            console.log('💡 Guía de botones de sucursales:');
+            console.log('✏️ Azul = Editar información');
+            console.log('👁️ Celeste = Ver detalles');
+            console.log('📦 Verde = Asignar productos');
+            console.log('✂️ Amarillo = Asignar servicios');
+            console.log('🗑️ Rojo = Eliminar sucursal');
+        });
+    </script>
+}

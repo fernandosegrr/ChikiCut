@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="The Estado field is required." xml:space="preserve">
+    <value>El campo Estado es obligatorio.</value>
+  </data>
+  <data name="The Nombre field is required." xml:space="preserve">
+    <value>El campo Nombre es obligatorio.</value>
+  </data>
+  <data name="The ApellidoPaterno field is required." xml:space="preserve">
+    <value>El campo Apellido Paterno es obligatorio.</value>
+  </data>
+  <data name="The SucursalId field is required." xml:space="preserve">
+    <value>El campo Sucursal es obligatorio.</value>
+  </data>
+  <data name="The CodigoEmpleado field is required." xml:space="preserve">
+    <value>El campo Código de Empleado es obligatorio.</value>
+  </data>
+  <data name="The Puesto field is required." xml:space="preserve">
+    <value>El campo Puesto es obligatorio.</value>
+  </data>
+  <data name="The Telefono field is required." xml:space="preserve">
+    <value>El campo Teléfono es obligatorio.</value>
+  </data>
+  <data name="The DireccionLinea1 field is required." xml:space="preserve">
+    <value>El campo Dirección es obligatorio.</value>
+  </data>
+  <data name="The Ciudad field is required." xml:space="preserve">
+    <value>El campo Ciudad es obligatorio.</value>
+  </data>
+  <data name="The CodigoPostal field is required." xml:space="preserve">
+    <value>El campo Código Postal es obligatorio.</value>
+  </data>
+  <data name="The FechaIngreso field is required." xml:space="preserve">
+    <value>El campo Fecha de Ingreso es obligatorio.</value>
+  </data>
+</root>

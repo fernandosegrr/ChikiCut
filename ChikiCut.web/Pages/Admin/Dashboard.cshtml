@@ -1,0 +1,282 @@
+@page
+@model ChikiCut.web.Pages.Admin.DashboardModel
+@{
+    ViewData["Title"] = "Panel de Administración";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1>
+                <i class="bi bi-gear-fill me-2 text-primary"></i>
+                Panel de Administración
+            </h1>
+            <p class="text-muted">Configuración y gestión del sistema ChikiCut</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" role="group">
+                <a href="/" class="btn btn-outline-secondary">
+                    <i class="bi bi-house me-1"></i>Hub Principal
+                </a>
+                <a href="/Operaciones/Dashboard" class="btn btn-outline-success">
+                    <i class="bi bi-briefcase me-1"></i>Operaciones
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Información del Usuario -->
+<div class="alert alert-primary d-flex align-items-center mb-4">
+    <i class="bi bi-person-badge me-3 fs-4"></i>
+    <div>
+        <strong>Sesión Administrativa Activa</strong><br>
+        <small>Usuario: <strong>@Model.UserName</strong> • Rol: <span class="badge bg-white text-primary">@Model.UserRole</span> • Nivel: @Model.UserLevel</small>
+    </div>
+</div>
+
+<!-- SECCIÓN: INFRAESTRUCTURA -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h3><i class="bi bi-building me-2 text-primary"></i>Infraestructura del Sistema</h3>
+        <p class="text-muted">Configuración básica de sucursales, empleados y usuarios</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-primary">
+            <div class="card-body text-center">
+                <i class="bi bi-building display-4 text-primary mb-3"></i>
+                <h5 class="card-title">Sucursales</h5>
+                <p class="card-text">Administra las ubicaciones y configuraciones de cada sucursal</p>
+                <div class="d-grid">
+                    <a href="/Sucursales" class="btn btn-primary">
+                        <i class="bi bi-gear me-1"></i>Administrar Sucursales
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-people display-4 text-success mb-3"></i>
+                <h5 class="card-title">Empleados</h5>
+                <p class="card-text">Gestiona el personal, puestos y asignaciones</p>
+                <div class="d-grid">
+                    <a href="/Empleados" class="btn btn-success">
+                        <i class="bi bi-person-gear me-1"></i>Gestionar Personal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-person-workspace display-4 text-info mb-3"></i>
+                <h5 class="card-title">Puestos</h5>
+                <p class="card-text">Define roles y responsabilidades del personal</p>
+                <div class="d-grid">
+                    <a href="/Puestos" class="btn btn-info">
+                        <i class="bi bi-diagram-3 me-1"></i>Configurar Puestos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    @if (Model.UserLevel >= 4)
+    {
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-people-fill display-4 text-warning mb-3"></i>
+                    <h5 class="card-title">Usuarios</h5>
+                    <p class="card-text">Administra cuentas de acceso al sistema</p>
+                    <div class="d-grid">
+                        <a href="/Usuarios" class="btn btn-warning">
+                            <i class="bi bi-person-fill-gear me-1"></i>Gestionar Usuarios
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-shield-check display-4 text-danger mb-3"></i>
+                    <h5 class="card-title">Roles y Permisos</h5>
+                    <p class="card-text">Define niveles de acceso y permisos</p>
+                    <div class="d-grid">
+                        <a href="/Roles" class="btn btn-danger">
+                            <i class="bi bi-shield-fill-check me-1"></i>Configurar Roles
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- SECCIÓN: CATÁLOGOS MAESTROS -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h3><i class="bi bi-folder-fill me-2 text-success"></i>Catálogos Maestros</h3>
+        <p class="text-muted">Productos, servicios y configuraciones base del negocio</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-dark">
+            <div class="card-body text-center">
+                <i class="bi bi-box-seam display-4 text-dark mb-3"></i>
+                <h5 class="card-title">Catálogo de Productos</h5>
+                <p class="card-text">Administra productos, marcas y categorías</p>
+                <div class="d-grid">
+                    <a href="/Productos" class="btn btn-dark">
+                        <i class="bi bi-box me-1"></i>Gestionar Productos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-scissors display-4 text-secondary mb-3"></i>
+                <h5 class="card-title">Catálogo de Servicios</h5>
+                <p class="card-text">Define servicios, tiempos y precios base</p>
+                <div class="d-grid">
+                    <a href="/Servicios" class="btn btn-secondary">
+                        <i class="bi bi-scissors me-1"></i>Gestionar Servicios
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-truck display-4 text-warning mb-3"></i>
+                <h5 class="card-title">Proveedores</h5>
+                <p class="card-text">Administra contactos y términos comerciales</p>
+                <div class="d-grid">
+                    <a href="/Proveedores" class="btn btn-warning">
+                        <i class="bi bi-truck me-1"></i>Gestionar Proveedores
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-cash-coin display-4 text-danger mb-3"></i>
+                <h5 class="card-title">Conceptos de Gastos</h5>
+                <p class="card-text">Define categorías y límites de gastos</p>
+                <div class="d-grid">
+                    <a href="/ConceptosGasto" class="btn btn-danger">
+                        <i class="bi bi-coin me-1"></i>Configurar Conceptos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.UserLevel >= 4)
+{
+    <!-- SECCIÓN: HERRAMIENTAS AVANZADAS -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3><i class="bi bi-tools me-2 text-info"></i>Herramientas Avanzadas</h3>
+            <p class="text-muted">Herramientas especializadas para administradores del sistema</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-lg-6">
+            <div class="card h-100 shadow-sm border-info">
+                <div class="card-body text-center">
+                    <i class="bi bi-grid-3x3-gap display-4 text-info mb-3"></i>
+                    <h5 class="card-title">Matriz Global de Asignaciones</h5>
+                    <p class="card-text">Herramienta masiva para asignar productos y servicios a sucursales</p>
+                    <div class="d-grid">
+                        <a href="/Catalogos/MatrizGlobal" class="btn btn-info">
+                            <i class="bi bi-grid-3x3-gap me-1"></i>Abrir Matriz Global
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-download display-4 text-primary mb-3"></i>
+                    <h5 class="card-title">Importar / Exportar</h5>
+                    <p class="card-text">Herramientas de migración y respaldo de datos</p>
+                    <div class="d-grid">
+                        <button class="btn btn-primary" disabled>
+                            <i class="bi bi-download me-1"></i>Próximamente
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Panel de Información -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Información del Panel Administrativo
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="text-primary">?? Infraestructura</h6>
+                        <ul class="small">
+                            <li>Configuración de sucursales</li>
+                            <li>Gestión de empleados y puestos</li>
+                            <li>Administración de usuarios</li>
+                            <li>Control de roles y permisos</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-success">?? Catálogos</h6>
+                        <ul class="small">
+                            <li>Productos y categorías</li>
+                            <li>Servicios y precios base</li>
+                            <li>Proveedores y contactos</li>
+                            <li>Conceptos de gastos</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-info">??? Herramientas</h6>
+                        <ul class="small">
+                            <li>Matriz global de asignaciones</li>
+                            <li>Herramientas de importación</li>
+                            <li>Configuraciones del sistema</li>
+                            <li>Respaldos y mantenimiento</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

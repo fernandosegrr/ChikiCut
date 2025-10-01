@@ -1,0 +1,575 @@
+@page
+@model ChikiCut.web.Pages.Sucursales.AsignarProductosModel
+@{
+    ViewData["Title"] = "Asignar Productos a Sucursal";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1><i class="bi bi-grid-3x3-gap me-2"></i>Asignar Productos</h1>
+            <p class="text-muted">
+                <i class="bi bi-building me-1"></i><strong>@Model.Sucursal.Name</strong> 
+                - @Model.Sucursal.City, @Model.Sucursal.State
+            </p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" role="group">
+                <a asp-page="../Sucursales/Details" asp-route-id="@Model.SucursalId" class="btn btn-info">
+                    <i class="bi bi-eye me-1"></i>Ver Sucursal
+                </a>
+                <a asp-page="../Sucursales/Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Estadísticas -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-box-seam display-6 mb-2"></i>
+                <h3 class="card-title">@Model.TotalProductos</h3>
+                <p class="card-text mb-0">Total Productos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-check-circle display-6 mb-2"></i>
+                <h3 class="card-title">@Model.ProductosAsignados</h3>
+                <p class="card-text mb-0">Ya Asignados</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-clock-history display-6 mb-2"></i>
+                <h3 class="card-title">@(Model.TotalProductos - Model.ProductosAsignados)</h3>
+                <p class="card-text mb-0">Sin Asignar</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-percent display-6 mb-2"></i>
+                <h3 class="card-title">@(Model.TotalProductos > 0 ? Math.Round((double)Model.ProductosAsignados / Model.TotalProductos * 100, 1) : 0)%</h3>
+                <p class="card-text mb-0">Cobertura</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-funnel me-2"></i><strong>Filtros y Búsqueda</strong>
+    </div>
+    <div class="card-body">
+        <form method="get">
+            <input type="hidden" name="id" value="@Model.SucursalId" />
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">
+                        <i class="bi bi-search me-1"></i>Buscar
+                    </label>
+                    <input name="search" value="@Model.SearchString" class="form-control" 
+                           placeholder="Nombre, código o marca...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">
+                        <i class="bi bi-tag me-1"></i>Categoría
+                    </label>
+                    <select name="categoria" class="form-select">
+                        <option value="">Todas</option>
+                        @foreach (var categoria in Model.CategoriasDisponibles)
+                        {
+                            <option value="@categoria" selected="@(Model.CategoriaFilter == categoria)">@categoria</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">
+                        <i class="bi bi-award me-1"></i>Marca
+                    </label>
+                    <select name="marca" class="form-select">
+                        <option value="">Todas</option>
+                        @foreach (var marca in Model.MarcasDisponibles)
+                        {
+                            <option value="@marca" selected="@(Model.MarcaFilter == marca)">@marca</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">
+                        <i class="bi bi-filter me-1"></i>Estado
+                    </label>
+                    <select name="soloNoAsignados" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="true" selected="@(Model.SoloNoAsignados == true)">Solo sin asignar</option>
+                        <option value="false" selected="@(Model.SoloNoAsignados == false)">Solo asignados</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search me-1"></i>Filtrar
+                        </button>
+                        <a asp-page="AsignarProductos" asp-route-id="@Model.SucursalId" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Herramientas masivas -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-tools me-2"></i><strong>Herramientas Masivas</strong>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-success" onclick="seleccionarTodos()">
+                        <i class="bi bi-check-all me-1"></i>Seleccionar Todos
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="limpiarSeleccion()">
+                        <i class="bi bi-x-circle me-1"></i>Limpiar
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <button type="button" class="btn btn-warning w-100" onclick="abrirConfiguracionMasiva()">
+                    <i class="bi bi-gear me-1"></i>Configuración Masiva
+                </button>
+            </div>
+            <div class="col-md-4">
+                <div class="small text-muted">
+                    <strong id="contadorSeleccionados">0</strong> productos seleccionados
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de productos -->
+<form method="post" id="asignacionForm">
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+    <input type="hidden" asp-for="SucursalId" />
+
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-list-ul me-2"></i><strong>Productos Disponibles (@Model.ProductosDisponibles.Count)</strong>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.ProductosDisponibles.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="50px">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="selectAllMain" onchange="toggleSelectAll()">
+                                    </div>
+                                </th>
+                                <th>Producto</th>
+                                <th width="120px">Precio Venta</th>
+                                <th width="100px">Stock Inicial</th>
+                                <th width="80px">Disponible</th>
+                                <th width="80px">Destacado</th>
+                                <th width="100px">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.ProductosDisponibles.Count; i++)
+                            {
+                                var producto = Model.ProductosDisponibles[i];
+                                var isAsignado = producto.EstaAsignado;
+                                
+                                <tr class="@(isAsignado ? "table-success" : "")" data-producto-id="@producto.Producto.Id">
+                                    <td>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input producto-checkbox" 
+                                                   name="ProductosAsignacion[@i].Asignar" 
+                                                   value="true"
+                                                   checked="@isAsignado"
+                                                   onchange="updateProductoRow(this, @i)">
+                                            <input type="hidden" name="ProductosAsignacion[@i].Asignar" value="false">
+                                            <input type="hidden" name="ProductosAsignacion[@i].ProductoId" value="@producto.Producto.Id">
+                                            <input type="hidden" name="ProductosAsignacion[@i].ProductoNombre" value="@producto.Producto.Nombre">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(producto.Producto.ImagenPrincipalUrl))
+                                            {
+                                                <img src="@producto.Producto.ImagenPrincipalUrl" alt="@producto.Producto.Nombre" 
+                                                     class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            }
+                                            else
+                                            {
+                                                <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" 
+                                                     style="width: 40px; height: 40px;">
+                                                    <i class="bi bi-box text-muted"></i>
+                                                </div>
+                                            }
+                                            <div>
+                                                <div class="fw-bold">@producto.Producto.Nombre</div>
+                                                <small class="text-muted">
+                                                    <span class="badge bg-secondary me-1">@producto.Producto.Codigo</span>
+                                                    @producto.Producto.Marca
+                                                    <span class="badge bg-info ms-1">@producto.Producto.Categoria</span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" 
+                                                   name="ProductosAsignacion[@i].PrecioVenta" 
+                                                   class="form-control precio-input" 
+                                                   value="@(producto.AsignacionActual?.PrecioVenta ?? producto.Producto.PrecioBase)" 
+                                                   step="0.01" 
+                                                   min="0"
+                                                   disabled="@(!isAsignado)">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <input type="number" 
+                                               name="ProductosAsignacion[@i].StockInicial" 
+                                               class="form-control form-control-sm stock-input" 
+                                               value="@(producto.AsignacionActual?.StockActual ?? (producto.Producto.RequiereInventario ? 10 : 0))" 
+                                               min="0"
+                                               disabled="@(!isAsignado || !producto.Producto.RequiereInventario)">
+                                        @if (!producto.Producto.RequiereInventario)
+                                        {
+                                            <small class="text-muted">No aplica</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" 
+                                                   name="ProductosAsignacion[@i].Disponible" 
+                                                   class="form-check-input disponible-input" 
+                                                   checked="@(producto.AsignacionActual?.Disponible ?? true)"
+                                                   disabled="@(!isAsignado)">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" 
+                                                   name="ProductosAsignacion[@i].EsDestacado" 
+                                                   class="form-check-input destacado-input" 
+                                                   checked="@(producto.AsignacionActual?.EsDestacadoLocal ?? false)"
+                                                   disabled="@(!isAsignado)">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (isAsignado)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>Asignado
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-dash-circle me-1"></i>Sin asignar
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted">
+                            <strong id="resumenSeleccionados">0</strong> productos serán asignados
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle me-1"></i>Guardar Asignaciones
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="previsualizarCambios()">
+                                <i class="bi bi-eye me-1"></i>Previsualizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-box display-1 text-muted"></i>
+                    <h4 class="text-muted mt-3">No se encontraron productos</h4>
+                    <p class="text-muted">
+                        @if (!string.IsNullOrEmpty(Model.SearchString) || !string.IsNullOrEmpty(Model.CategoriaFilter))
+                        {
+                            <span>Prueba ajustando los filtros de búsqueda.</span>
+                        }
+                        else
+                        {
+                            <span>No hay productos disponibles en el catálogo.</span>
+                        }
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+</form>
+
+<!-- Modal de configuración masiva -->
+<div class="modal fade" id="configuracionMasivaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-gear me-2"></i>Configuración Masiva
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="configuracionMasivaForm">
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Configuración:</label>
+                        <select name="Configuracion" class="form-select" id="tipoConfiguracion" onchange="toggleConfiguracionPersonalizada()">
+                            <option value="base">Usar precio base del producto</option>
+                            <option value="margen">Calcular con margen sugerido</option>
+                            <option value="personalizado">Configuración personalizada</option>
+                        </select>
+                    </div>
+                    
+                    <div id="configuracionPersonalizada" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Precio de Venta:</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" name="PrecioMasivo" class="form-control" step="0.01" min="0">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Stock Inicial:</label>
+                            <input type="number" name="StockMasivo" class="form-control" min="0" value="10">
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Productos seleccionados:</strong> <span id="productosSeleccionadosModal">0</span>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="aplicarConfiguracionMasiva()">
+                    <i class="bi bi-check-circle me-1"></i>Aplicar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let productosSeleccionados = new Set();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            actualizarContadores();
+            actualizarEstadoSelectAll();
+        });
+
+        function updateProductoRow(checkbox, index) {
+            const row = checkbox.closest('tr');
+            const productoId = row.dataset.productoId;
+            const isChecked = checkbox.checked;
+            
+            // Habilitar/deshabilitar inputs de la fila
+            const inputs = row.querySelectorAll('.precio-input, .stock-input, .disponible-input, .destacado-input');
+            inputs.forEach(input => {
+                input.disabled = !isChecked;
+            });
+            
+            // Actualizar estilos de la fila
+            if (isChecked) {
+                row.classList.add('table-success');
+                productosSeleccionados.add(productoId);
+            } else {
+                row.classList.remove('table-success');
+                productosSeleccionados.delete(productoId);
+            }
+            
+            actualizarContadores();
+            actualizarEstadoSelectAll();
+        }
+
+        function toggleSelectAll() {
+            const selectAllCheckbox = document.getElementById('selectAllMain');
+            const checkboxes = document.querySelectorAll('.producto-checkbox');
+            
+            checkboxes.forEach((checkbox, index) => {
+                checkbox.checked = selectAllCheckbox.checked;
+                updateProductoRow(checkbox, index);
+            });
+        }
+
+        function seleccionarTodos() {
+            const checkboxes = document.querySelectorAll('.producto-checkbox');
+            checkboxes.forEach((checkbox, index) => {
+                checkbox.checked = true;
+                updateProductoRow(checkbox, index);
+            });
+            document.getElementById('selectAllMain').checked = true;
+        }
+
+        function limpiarSeleccion() {
+            const checkboxes = document.querySelectorAll('.producto-checkbox');
+            checkboxes.forEach((checkbox, index) => {
+                checkbox.checked = false;
+                updateProductoRow(checkbox, index);
+            });
+            document.getElementById('selectAllMain').checked = false;
+        }
+
+        function actualizarContadores() {
+            const seleccionados = document.querySelectorAll('.producto-checkbox:checked').length;
+            document.getElementById('contadorSeleccionados').textContent = seleccionados;
+            document.getElementById('resumenSeleccionados').textContent = seleccionados;
+        }
+
+        function actualizarEstadoSelectAll() {
+            const checkboxes = document.querySelectorAll('.producto-checkbox');
+            const checkedBoxes = document.querySelectorAll('.producto-checkbox:checked');
+            const selectAllCheckbox = document.getElementById('selectAllMain');
+            
+            if (checkedBoxes.length === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else if (checkedBoxes.length === checkboxes.length) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            }
+        }
+
+        function abrirConfiguracionMasiva() {
+            const seleccionados = document.querySelectorAll('.producto-checkbox:checked').length;
+            
+            if (seleccionados === 0) {
+                alert('Por favor selecciona al menos un producto.');
+                return;
+            }
+            
+            document.getElementById('productosSeleccionadosModal').textContent = seleccionados;
+            
+            const modal = new bootstrap.Modal(document.getElementById('configuracionMasivaModal'));
+            modal.show();
+        }
+
+        function toggleConfiguracionPersonalizada() {
+            const select = document.getElementById('tipoConfiguracion');
+            const div = document.getElementById('configuracionPersonalizada');
+            
+            div.style.display = select.value === 'personalizado' ? 'block' : 'none';
+        }
+
+        async function aplicarConfiguracionMasiva() {
+            const form = document.getElementById('configuracionMasivaForm');
+            const formData = new FormData(form);
+            
+            // Agregar productos seleccionados
+            const checkboxes = document.querySelectorAll('.producto-checkbox:checked');
+            checkboxes.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                const productoId = row.dataset.productoId;
+                formData.append('ProductosSeleccionados', productoId);
+            });
+            
+            try {
+                const response = await fetch('?handler=AplicarConfiguracionMasiva', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Aplicar los resultados a los inputs
+                        result.resultados.forEach(item => {
+                            const row = document.querySelector(`tr[data-producto-id="${item.productoId}"]`);
+                            if (row) {
+                                const precioInput = row.querySelector('.precio-input');
+                                const stockInput = row.querySelector('.stock-input');
+                                
+                                if (precioInput) precioInput.value = item.precio;
+                                if (stockInput) stockInput.value = item.stock;
+                            }
+                        });
+                        
+                        // Cerrar modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('configuracionMasivaModal'));
+                        modal.hide();
+                        
+                        alert(`Configuración aplicada a ${result.resultados.length} productos.`);
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } else {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al aplicar configuración: ' + error.message);
+            }
+        }
+
+        function previsualizarCambios() {
+            const checkboxes = document.querySelectorAll('.producto-checkbox:checked');
+            
+            if (checkboxes.length === 0) {
+                alert('No hay productos seleccionados para asignar.');
+                return;
+            }
+            
+            let resumen = `Se asignarán ${checkboxes.length} productos a la sucursal @Model.Sucursal.Name:\n\n`;
+            
+            checkboxes.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                const nombre = row.querySelector('input[name*="ProductoNombre"]').value;
+                const precio = row.querySelector('.precio-input').value;
+                resumen += `• ${nombre} - $${precio}\n`;
+            });
+            
+            if (confirm(resumen + '\n¿Continuar con la asignación?')) {
+                document.getElementById('asignacionForm').submit();
+            }
+        }
+    </script>
+}

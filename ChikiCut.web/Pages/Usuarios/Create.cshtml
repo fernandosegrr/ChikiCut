@@ -1,0 +1,323 @@
+@page
+@model ChikiCut.web.Pages.Usuarios.CreateModel
+@{
+    ViewData["Title"] = "Nuevo Usuario";
+}
+
+<div class="page-header mb-4">
+    <h1><i class="bi bi-person-plus me-2"></i>Nuevo Usuario</h1>
+    <p class="text-muted">Crea una nueva cuenta de usuario para un empleado</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="post">
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <!-- Información del Usuario -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-person-circle me-2"></i><strong>Información del Usuario</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label asp-for="Usuario.EmpleadoId" class="form-label">Empleado *</label>
+                                <select asp-for="Usuario.EmpleadoId" asp-items="Model.EmpleadoOptions" class="form-select">
+                                    <option value="">-- Seleccione un empleado --</option>
+                                </select>
+                                <span asp-validation-for="Usuario.EmpleadoId" class="text-danger"></span>
+                                <div class="form-text">Solo se muestran empleados activos sin cuenta de usuario.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Usuario.Email" class="form-label">Email *</label>
+                                <input asp-for="Usuario.Email" type="email" class="form-control" placeholder="usuario@chikicut.com" />
+                                <span asp-validation-for="Usuario.Email" class="text-danger"></span>
+                                <div class="form-text">Se usará para iniciar sesión en el sistema.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Usuario.RolId" class="form-label">Rol *</label>
+                                <select asp-for="Usuario.RolId" asp-items="Model.RolOptions" class="form-select">
+                                    <option value="">-- Seleccione un rol --</option>
+                                </select>
+                                <span asp-validation-for="Usuario.RolId" class="text-danger"></span>
+                                <div class="form-text">Define los permisos y nivel de acceso.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de Seguridad -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-shield-lock me-2"></i><strong>Configuración de Seguridad</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Password" class="form-label">Contraseña *</label>
+                                <input asp-for="Password" type="password" class="form-control" />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                                <div class="form-text">Mínimo 6 caracteres.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ConfirmPassword" class="form-label">Confirmar Contraseña *</label>
+                                <input asp-for="ConfirmPassword" type="password" class="form-control" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                <div class="form-text">Debe coincidir con la contraseña anterior.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input asp-for="Usuario.IsActive" class="form-check-input" />
+                                <label asp-for="Usuario.IsActive" class="form-check-label">
+                                    Usuario Activo
+                                </label>
+                                <div class="form-text">Los usuarios inactivos no pueden acceder al sistema.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NUEVA SECCIÓN: Sucursales Asignadas -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-buildings me-2"></i><strong>Sucursales Asignadas</strong>
+                </div>
+                <div class="card-body">
+                    @if (!Model.TieneAccesoGlobal && !Model.SucursalesDisponibles.Any())
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Sin sucursales disponibles:</strong> No tienes permisos para asignar sucursales a este usuario.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="AsignarSucursalEmpleado" class="form-check-input" id="usarSucursalEmpleado" checked>
+                                <label asp-for="AsignarSucursalEmpleado" class="form-check-label">
+                                    <strong>Usar la sucursal del empleado automáticamente</strong>
+                                </label>
+                                <div class="form-text">El usuario tendrá acceso a la sucursal donde trabaja su empleado asociado.</div>
+                            </div>
+                        </div>
+
+                        <div id="sucursalesManual" style="display: none;">
+                            <hr>
+                            <h6><i class="bi bi-gear me-1"></i>Configuración Manual de Sucursales</h6>
+                            <p class="text-muted small mb-3">
+                                Selecciona las sucursales específicas a las que este usuario tendrá acceso.
+                                @if (!Model.TieneAccesoGlobal)
+                                {
+                                    <strong>Solo puedes asignar sucursales a las que tú tienes acceso.</strong>
+                                }
+                            </p>
+                            
+                            <span asp-validation-for="SucursalesSeleccionadas" class="text-danger"></span>
+                            
+                            <div class="row">
+                                @foreach (var sucursal in Model.SucursalesDisponibles)
+                                {
+                                    <div class="col-md-6 mb-2">
+                                        <div class="form-check">
+                                            <input type="checkbox" 
+                                                   name="SucursalesSeleccionadas" 
+                                                   value="@sucursal.Id" 
+                                                   class="form-check-input" 
+                                                   id="sucursal_@sucursal.Id">
+                                            <label class="form-check-label" for="sucursal_@sucursal.Id">
+                                                <i class="bi bi-building me-1"></i>
+                                                <strong>@sucursal.Name</strong>
+                                                <small class="text-muted d-block">@sucursal.City, @sucursal.State</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            
+                            @if (!Model.SucursalesDisponibles.Any())
+                            {
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    No hay sucursales disponibles para asignar.
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle me-1"></i>Crear Usuario
+                </button>
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Panel de ayuda -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Información</strong>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-2"><strong>Campos obligatorios (*)</strong></p>
+                <ul class="small text-muted">
+                    <li>Empleado vinculado</li>
+                    <li>Email (único en el sistema)</li>
+                    <li>Contraseña (mínimo 6 caracteres)</li>
+                    <li>Rol del usuario</li>
+                </ul>
+                
+                <hr class="my-3">
+                
+                <p class="small text-muted mb-2"><strong>Notas importantes:</strong></p>
+                <ul class="small text-muted">
+                    <li>Cada empleado solo puede tener una cuenta</li>
+                    <li>El email debe ser único</li>
+                    <li>La contraseña se encripta automáticamente</li>
+                    <li>Se genera un código de usuario automático</li>
+                </ul>
+                
+                <hr class="my-3">
+                
+                <p class="small text-muted mb-2"><strong>Datos automáticos:</strong></p>
+                <ul class="small text-muted">
+                    <li>Código de usuario (USR###)</li>
+                    <li>Fecha de creación</li>
+                    <li>Hash de contraseña seguro</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-shield-check me-2"></i><strong>Niveles de Rol</strong>
+            </div>
+            <div class="card-body">
+                <div class="small">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-danger me-2">5</span>
+                        <span>Administrador - Acceso total</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-warning me-2">4</span>
+                        <span>Gerente - Gestión avanzada</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-info me-2">3</span>
+                        <span>Supervisor - Supervisión</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-primary me-2">2</span>
+                        <span>Empleado - Operaciones básicas</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-secondary me-2">1</span>
+                        <span>Consulta - Solo lectura</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Control de sucursales: automático vs manual
+            const usarSucursalEmpleado = document.getElementById('usarSucursalEmpleado');
+            const sucursalesManual = document.getElementById('sucursalesManual');
+            
+            function toggleSucursalesMode() {
+                if (usarSucursalEmpleado.checked) {
+                    sucursalesManual.style.display = 'none';
+                    // Desmarcar todas las sucursales manuales
+                    document.querySelectorAll('input[name="SucursalesSeleccionadas"]').forEach(cb => {
+                        cb.checked = false;
+                    });
+                } else {
+                    sucursalesManual.style.display = 'block';
+                }
+            }
+            
+            if (usarSucursalEmpleado) {
+                usarSucursalEmpleado.addEventListener('change', toggleSucursalesMode);
+                toggleSucursalesMode(); // Inicializar
+            }
+            
+            // Sincronizar email con el empleado seleccionado si es posible
+            const empleadoSelect = document.getElementById('Usuario_EmpleadoId');
+            const emailInput = document.getElementById('Usuario_Email');
+            
+            if (empleadoSelect && emailInput) {
+                empleadoSelect.addEventListener('change', function() {
+                    if (this.value && !emailInput.value) {
+                        // Si no hay email y se selecciona empleado, sugerir formato
+                        const selectedText = this.options[this.selectedIndex].text;
+                        const nombreCompleto = selectedText.split(' - ')[0];
+                        const nombres = nombreCompleto.toLowerCase().split(' ');
+                        if (nombres.length >= 2) {
+                            const sugerencia = nombres[0] + '.' + nombres[1] + '@@chikicut.com';
+                            emailInput.placeholder = 'Sugerencia: ' + sugerencia;
+                        }
+                    }
+                });
+            }
+            
+            // Validación en tiempo real de contraseñas
+            const passwordInput = document.getElementById('Password');
+            const confirmPasswordInput = document.getElementById('ConfirmPassword');
+            
+            function validatePasswords() {
+                if (passwordInput.value && confirmPasswordInput.value) {
+                    if (passwordInput.value !== confirmPasswordInput.value) {
+                        confirmPasswordInput.setCustomValidity('Las contraseñas no coinciden');
+                    } else {
+                        confirmPasswordInput.setCustomValidity('');
+                    }
+                }
+            }
+            
+            if (passwordInput && confirmPasswordInput) {
+                passwordInput.addEventListener('input', validatePasswords);
+                confirmPasswordInput.addEventListener('input', validatePasswords);
+            }
+
+            // Helpers para sucursales
+            window.seleccionarTodasSucursales = function() {
+                document.querySelectorAll('input[name="SucursalesSeleccionadas"]').forEach(cb => {
+                    cb.checked = true;
+                });
+            };
+
+            window.limpiarSucursales = function() {
+                document.querySelectorAll('input[name="SucursalesSeleccionadas"]').forEach(cb => {
+                    cb.checked = false;
+                });
+            };
+        });
+    </script>
+}

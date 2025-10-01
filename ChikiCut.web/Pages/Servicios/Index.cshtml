@@ -1,0 +1,416 @@
+@page
+@model ChikiCut.web.Pages.Servicios.IndexModel
+@{
+    ViewData["Title"] = "Catálogo de Servicios";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1><i class="bi bi-scissors me-2"></i>Catálogo de Servicios</h1>
+            <p class="text-muted">Gestiona el catálogo maestro de servicios de ChikiCut</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" role="group">
+                <a asp-page="Create" class="btn btn-success">
+                    <i class="bi bi-plus-circle me-1"></i>Nuevo Servicio
+                </a>
+                <a asp-page="../Catalogos/MatrizGlobal" asp-route-tipo="servicios" class="btn btn-info">
+                    <i class="bi bi-grid-3x3-gap me-1"></i>Matriz Global
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" id="filtrosForm">
+            @Html.AntiForgeryToken()
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="searchString" class="form-label">
+                        <i class="bi bi-search me-1"></i>Buscar
+                    </label>
+                    <div class="input-group">
+                        <input name="searchString" value="@Model.SearchString" class="form-control" placeholder="Código, nombre o descripción..." id="searchInput">
+                        <button type="submit" class="btn btn-outline-secondary" title="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <div class="form-text">Búsqueda no sensible a mayúsculas/minúsculas</div>
+                </div>
+                <div class="col-md-3">
+                    <label for="categoriaFilter" class="form-label">
+                        <i class="bi bi-tags me-1"></i>Categoría
+                    </label>
+                    <select name="categoriaFilter" class="form-select" id="categoriaFilter">
+                        <option value="">Todas las categorías</option>
+                        @foreach (var categoria in Model.CategoriasDisponibles)
+                        {
+                            <option value="@categoria" selected="@(Model.CategoriaFilter == categoria)">@categoria</option>
+                        }
+                    </select>
+                    <div class="form-text">Filtro automático</div>
+                </div>
+                <div class="col-md-3">
+                    <label for="soloActivos" class="form-label">
+                        <i class="bi bi-toggle-on me-1"></i>Estado
+                    </label>
+                    <select name="soloActivos" class="form-select" id="estadoFilter">
+                        <option value="">Todos</option>
+                        <option value="true" selected="@(Model.SoloActivos == true)">Solo activos</option>
+                        <option value="false" selected="@(Model.SoloActivos == false)">Solo inactivos</option>
+                    </select>
+                    <div class="form-text">Filtro automático</div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <a asp-page="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-scissors display-4"></i>
+                <h3 class="mt-2">@Model.TotalServicios</h3>
+                <p class="mb-0">Total Servicios</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-check-circle display-4"></i>
+                <h3 class="mt-2">@Model.ServiciosActivos</h3>
+                <p class="mb-0">Servicios Activos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-currency-dollar display-4"></i>
+                <h3 class="mt-2">@Model.PrecioPromedio.ToString("C")</h3>
+                <p class="mb-0">Precio Promedio</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-building display-4"></i>
+                <h3 class="mt-2">@(Model.Servicios.SelectMany(s => s.SucursalesAsignadas).Count())</h3>
+                <p class="mb-0">Asignaciones</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Servicios -->
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-list-ul me-2"></i><strong>Lista de Servicios</strong>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Código</th>
+                        <th>Servicio</th>
+                        <th>Categoría</th>
+                        <th class="d-none d-md-table-cell">Precio Base</th>
+                        <th class="d-none d-lg-table-cell">Duración</th>
+                        <th class="d-none d-lg-table-cell">Nivel</th>
+                        <th class="d-none d-xl-table-cell">Sucursales</th>
+                        <th>Estado</th>
+                        <th width="150px">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var servicio in Model.Servicios)
+                    {
+                        <tr data-servicio="@servicio.Id" data-activo="@servicio.IsActive.ToString().ToLower()">
+                            <td>
+                                <span class="badge bg-secondary">@servicio.Codigo</span>
+                            </td>
+                            <td>
+                                <div class="fw-bold">@servicio.Nombre</div>
+                                @if (!string.IsNullOrEmpty(servicio.Subcategoria))
+                                {
+                                    <small class="text-muted">@servicio.Subcategoria</small>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge bg-info">@servicio.Categoria</span>
+                            </td>
+                            <td class="d-none d-md-table-cell">
+                                <strong>@servicio.PrecioFormateado</strong>
+                            </td>
+                            <td class="d-none d-lg-table-cell">
+                                <i class="bi bi-clock me-1"></i>@servicio.DuracionFormateada
+                            </td>
+                            <td class="d-none d-lg-table-cell">
+                                <span class="badge @(servicio.NivelDificultad <= 2 ? "bg-success" : servicio.NivelDificultad <= 4 ? "bg-warning" : "bg-danger")">
+                                    @servicio.NivelDescripcion
+                                </span>
+                            </td>
+                            <td class="d-none d-xl-table-cell">
+                                @if (servicio.SucursalesAsignadasCount > 0)
+                                {
+                                    <span class="badge bg-primary">@servicio.SucursalesAsignadasCount sucursal(es)</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin asignar</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge @(servicio.IsActive ? "bg-success" : "bg-danger")">
+                                    @servicio.EstadoDescripcion
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a asp-page="Details" asp-route-id="@servicio.Id" 
+                                       class="btn btn-sm btn-outline-info" title="Ver detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-page="Edit" asp-route-id="@servicio.Id" 
+                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-page="Asignar" asp-route-id="@servicio.Id" 
+                                       class="btn btn-sm btn-outline-success" title="Asignar a sucursales">
+                                        <i class="bi bi-building"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-sm @(servicio.IsActive ? "btn-outline-warning" : "btn-outline-success")" 
+                                            title="@(servicio.IsActive ? "Inactivar servicio" : "Activar servicio")"
+                                            onclick="toggleServicioEstado(@servicio.Id, @servicio.IsActive.ToString().ToLower())">
+                                        <i class="bi @(servicio.IsActive ? "bi-pause-circle" : "bi-play-circle")"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Servicios.Any())
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center py-5">
+                                <i class="bi bi-scissors display-4 text-muted d-block mb-3"></i>
+                                <h5 class="text-muted">No hay servicios registrados</h5>
+                                <p class="text-muted">Comienza agregando tu primer servicio</p>
+                                <a asp-page="Create" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-1"></i>Agregar Servicio
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros rápidos por estado -->
+@if (Model.Servicios.Any())
+{
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="btn-group" role="group">
+                <input type="radio" class="btn-check" name="filtroEstado" id="filtroTodos" value="todos" checked>
+                <label class="btn btn-outline-secondary" for="filtroTodos">
+                    <i class="bi bi-list me-1"></i>Todos (@Model.TotalServicios)
+                </label>
+                
+                <input type="radio" class="btn-check" name="filtroEstado" id="filtroActivos" value="activos">
+                <label class="btn btn-outline-success" for="filtroActivos">
+                    <i class="bi bi-check-circle me-1"></i>Activos (@Model.ServiciosActivos)
+                </label>
+                
+                <input type="radio" class="btn-check" name="filtroEstado" id="filtroInactivos" value="inactivos">
+                <label class="btn btn-outline-danger" for="filtroInactivos">
+                    <i class="bi bi-x-circle me-1"></i>Inactivos (@(Model.TotalServicios - Model.ServiciosActivos))
+                </label>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Script para filtrar servicios por estado
+        document.addEventListener('DOMContentLoaded', function() {
+            const filtros = document.querySelectorAll('input[name="filtroEstado"]');
+            const filas = document.querySelectorAll('tbody tr[data-servicio]');
+
+            filtros.forEach(filtro => {
+                filtro.addEventListener('change', function() {
+                    const filtroSeleccionado = this.value;
+                    
+                    filas.forEach(fila => {
+                        const esActivo = fila.getAttribute('data-activo') === 'true';
+                        let mostrar = false;
+                        
+                        switch(filtroSeleccionado) {
+                            case 'todos':
+                                mostrar = true;
+                                break;
+                            case 'activos':
+                                mostrar = esActivo;
+                                break;
+                            case 'inactivos':
+                                mostrar = !esActivo;
+                                break;
+                        }
+                        
+                        fila.style.display = mostrar ? '' : 'none';
+                    });
+                });
+            });
+
+            // NUEVO: Filtros automáticos para Categoría y Estado
+            const categoriaSelect = document.getElementById('categoriaFilter');
+            const estadoSelect = document.getElementById('estadoFilter');
+            const searchInput = document.getElementById('searchInput');
+            
+            // Auto-submit cuando cambie la categoría
+            if (categoriaSelect) {
+                categoriaSelect.addEventListener('change', function() {
+                    console.log('Categoría cambiada a:', this.value);
+                    submitFilters();
+                });
+            }
+            
+            // Auto-submit cuando cambie el estado
+            if (estadoSelect) {
+                estadoSelect.addEventListener('change', function() {
+                    console.log('Estado cambiado a:', this.value);
+                    submitFilters();
+                });
+            }
+            
+            // Búsqueda con Enter
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        submitFilters();
+                    }
+                });
+            }
+            
+            // Función para enviar filtros automáticamente
+            function submitFilters() {
+                const form = document.getElementById('filtrosForm');
+                if (form) {
+                    // Mostrar indicador de carga (opcional)
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+                        submitButton.disabled = true;
+                    }
+                    
+                    form.submit();
+                }
+            }
+
+            // Animaciones para las tarjetas de estadísticas
+            const cards = document.querySelectorAll('.card.bg-primary, .card.bg-success, .card.bg-info, .card.bg-warning');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.classList.add('animate__animated', 'animate__fadeInUp');
+            });
+
+            window.limpiarSucursales = function() {
+                document.querySelectorAll('input[name="SucursalesSeleccionadas"]').forEach(cb => {
+                    cb.checked = false;
+                });
+            };
+
+            // NUEVA FUNCIÓN: Toggle estado del servicio
+            window.toggleServicioEstado = async function(servicioId, estadoActual) {
+                const confirmMessage = estadoActual 
+                    ? '¿Estás seguro de que deseas INACTIVAR este servicio?'
+                    : '¿Estás seguro de que deseas ACTIVAR este servicio?';
+                
+                if (!confirm(confirmMessage)) {
+                    return;
+                }
+
+                try {
+                    // Crear FormData para envío correcto
+                    const formData = new FormData();
+                    formData.append('id', servicioId);
+                    
+                    // Obtener el token antifalsificación
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    if (token) {
+                        formData.append('__RequestVerificationToken', token);
+                    }
+
+                    const response = await fetch('/Servicios?handler=ToggleEstado', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            // Recargar la página para mostrar los cambios
+                            location.reload();
+                        } else {
+                            alert('Error al cambiar el estado del servicio: ' + (result.error || 'Error desconocido'));
+                        }
+                    } else {
+                        throw new Error('Error en la respuesta del servidor: ' + response.status);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error de conexión: ' + error.message);
+                }
+            };
+        });
+    </script>
+}
+
+<style>
+    .animate__fadeInUp {
+        animation-name: fadeInUp;
+        animation-duration: 0.6s;
+        animation-fill-mode: both;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translate3d(0, 40px, 0);
+        }
+        to {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>

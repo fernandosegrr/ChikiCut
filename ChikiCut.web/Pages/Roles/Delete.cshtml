@@ -1,0 +1,223 @@
+@page
+@model ChikiCut.web.Pages.Roles.DeleteModel
+@{
+    ViewData["Title"] = $"{Model.TipoOperacion} Rol".ToUpper();
+}
+
+<div class="page-header mb-4">
+    <h1>
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        @(Model.TipoOperacion == "desactivar" ? "Desactivar" : "Reactivar") Rol
+    </h1>
+    <p class="text-muted">
+        @(Model.TipoOperacion == "desactivar" ? "Confirma la desactivación" : "Confirma la reactivación") del rol: <strong>@Model.Rol.Nombre</strong>
+    </p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Información del rol -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Información del Rol</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Nombre:</dt>
+                            <dd class="col-sm-8"><strong>@Model.Rol.Nombre</strong></dd>
+                            <dt class="col-sm-4">Nivel:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge @(Model.Rol.NivelAcceso switch 
+                                {
+                                    5 => "bg-danger",
+                                    4 => "bg-warning text-dark", 
+                                    3 => "bg-info",
+                                    2 => "bg-primary",
+                                    1 => "bg-secondary",
+                                    _ => "bg-dark"
+                                })">
+                                    @Model.Rol.NivelDescripcion
+                                </span>
+                            </dd>
+                            <dt class="col-sm-4">Estado Actual:</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.Rol.IsActive)
+                                {
+                                    <span class="badge bg-success">Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inactivo</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-5">Usuarios:</dt>
+                            <dd class="col-sm-7">
+                                @if (Model.TieneUsuarios)
+                                {
+                                    <span class="badge bg-warning">@Model.Rol.Usuarios.Count asignado(s)</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin usuarios</span>
+                                }
+                            </dd>
+                            <dt class="col-sm-5">Creado:</dt>
+                            <dd class="col-sm-7">@Model.Rol.CreatedAt.ToString("dd/MM/yyyy")</dd>
+                            @if (Model.Rol.UpdatedAt.HasValue)
+                            {
+                                <dt class="col-sm-5">Modificado:</dt>
+                                <dd class="col-sm-7">@Model.Rol.UpdatedAt.Value.ToString("dd/MM/yyyy")</dd>
+                            }
+                        </dl>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Rol.Descripcion))
+                {
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <dt>Descripción:</dt>
+                            <dd class="mt-2">@Model.Rol.Descripcion</dd>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Advertencias y confirmación -->
+        @if (!string.IsNullOrEmpty(Model.MensajeAdvertencia))
+        {
+            <div class="alert @(Model.EsRolPropio || Model.EsUltimoAdministrador || (Model.TieneUsuarios && Model.TipoOperacion == "desactivar") ? "alert-danger" : "alert-warning")" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Advertencia:</strong> @Model.MensajeAdvertencia
+            </div>
+        }
+
+        <!-- Explicación de la acción -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-gear me-2"></i><strong>¿Qué pasará al @Model.TipoOperacion este rol?</strong>
+            </div>
+            <div class="card-body">
+                @if (Model.TipoOperacion == "desactivar")
+                {
+                    <ul>
+                        <li><strong>El rol se marcará como inactivo</strong> en el sistema</li>
+                        <li><strong>No se podrá asignar</strong> a nuevos usuarios</li>
+                        <li><strong>Los usuarios actuales mantendrán</strong> sus permisos</li>
+                        <li><strong>Se puede reactivar</strong> en cualquier momento</li>
+                        <li><strong>No se eliminan datos</strong> - solo se desactiva</li>
+                    </ul>
+                }
+                else
+                {
+                    <ul>
+                        <li><strong>El rol se marcará como activo</strong> en el sistema</li>
+                        <li><strong>Estará disponible</strong> para asignar a usuarios</li>
+                        <li><strong>Recuperará su funcionalidad</strong> completa</li>
+                        <li><strong>Los permisos configurados</strong> se mantendrán</li>
+                    </ul>
+                }
+            </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="d-flex gap-2">
+            @if (Model.EsRolPropio || (Model.EsUltimoAdministrador && Model.TipoOperacion == "desactivar") || (Model.TieneUsuarios && Model.TipoOperacion == "desactivar"))
+            {
+                <button type="button" class="btn btn-danger" disabled>
+                    <i class="bi bi-x-circle me-1"></i>No se puede @Model.TipoOperacion
+                </button>
+            }
+            else
+            {
+                <form method="post" class="d-inline">
+                    <button type="submit" class="btn @(Model.TipoOperacion == "desactivar" ? "btn-warning" : "btn-success")" 
+                            onclick="return confirm('¿Estás seguro de que deseas @Model.TipoOperacion este rol?')">
+                        <i class="bi bi-@(Model.TipoOperacion == "desactivar" ? "pause" : "play") me-1"></i>
+                        @(Model.TipoOperacion == "desactivar" ? "Desactivar" : "Reactivar") Rol
+                    </button>
+                </form>
+            }
+            
+            <a asp-page="Details" asp-route-id="@Model.Rol.Id" class="btn btn-info">
+                <i class="bi bi-eye me-1"></i>Ver Detalles
+            </a>
+            <a asp-page="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Cancelar
+            </a>
+        </div>
+
+        <!-- Mensajes de error -->
+        @if (ViewData.ModelState.ErrorCount > 0)
+        {
+            <div class="alert alert-danger mt-3">
+                <div asp-validation-summary="All"></div>
+            </div>
+        }
+    </div>
+
+    <!-- Panel de información adicional -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-shield-exclamation me-2"></i><strong>Políticas de Seguridad</strong>
+            </div>
+            <div class="card-body">
+                <h6>Restricciones de Desactivación:</h6>
+                <ul class="small">
+                    <li>No puedes modificar tu propio rol</li>
+                    <li>No se puede desactivar el último administrador</li>
+                    <li>Los roles con usuarios requieren confirmación especial</li>
+                    <li>Los datos se conservan para auditoría</li>
+                </ul>
+                
+                <hr>
+                
+                <h6>Recomendaciones:</h6>
+                <ul class="small">
+                    <li>Asegúrate de tener roles alternativos disponibles</li>
+                    <li>Comunica los cambios a los usuarios afectados</li>
+                    <li>Mantén al menos un administrador activo</li>
+                    <li>Documenta el motivo del cambio</li>
+                </ul>
+            </div>
+        </div>
+
+        @if (Model.TieneUsuarios)
+        {
+            <div class="card mt-3">
+                <div class="card-header">
+                    <i class="bi bi-people me-2"></i><strong>Usuarios Afectados</strong>
+                </div>
+                <div class="card-body">
+                    <p class="small">
+                        Este rol tiene <strong>@Model.Rol.Usuarios.Count usuario(s)</strong> asignado(s):
+                    </p>
+                    <ul class="small">
+                        @foreach (var usuario in Model.Rol.Usuarios.Take(5))
+                        {
+                            <li>@usuario.Email</li>
+                        }
+                        @if (Model.Rol.Usuarios.Count > 5)
+                        {
+                            <li><em>y @(Model.Rol.Usuarios.Count - 5) más...</em></li>
+                        }
+                    </ul>
+                    @if (Model.TipoOperacion == "desactivar")
+                    {
+                        <div class="alert alert-warning alert-sm p-2 mt-2">
+                            <small>Los usuarios mantendrán sus permisos actuales.</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

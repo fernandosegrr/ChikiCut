@@ -1,0 +1,375 @@
+@page
+@model ChikiCut.web.Pages.IndexModel
+@{
+    ViewData["Title"] = "ChikiCut - Selecciona tu Área";
+}
+
+@section Styles {
+    <style>
+        .area-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 15px !important;
+        }
+
+        .area-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+        }
+
+        .area-card .card-header {
+            border-radius: 15px 15px 0 0 !important;
+        }
+
+        /* Asegurar que los enlaces no cambien el color del texto */
+        a.text-decoration-none:hover {
+            text-decoration: none !important;
+        }
+
+        a.text-decoration-none .card {
+            color: inherit;
+        }
+
+        a.text-decoration-none:hover .card {
+            color: inherit;
+        }
+
+        .feature-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+        }
+
+        .feature-item:hover {
+            background: rgba(0,0,0,0.05);
+            transform: scale(1.05);
+        }
+
+        .feature-item i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .feature-item small {
+            font-weight: 500;
+            color: #6c757d;
+        }
+
+        .admin-card:hover {
+            border-color: #0d6efd !important;
+        }
+
+        .operaciones-card:hover {
+            border-color: #198754 !important;
+        }
+
+        .display-1 {
+            font-size: 4rem;
+        }
+
+        /* Efecto de hover mejorado para toda la card */
+        a.text-decoration-none:hover .area-card {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+        }
+
+        @@media (max-width: 768px) {
+            .display-4 {
+                font-size: 2rem;
+            }
+            
+            .display-1 {
+                font-size: 3rem;
+            }
+            
+            .feature-item i {
+                font-size: 1.2rem;
+            }
+            
+            .feature-item small {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <!-- Header Principal -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 mb-3">
+            <i class="bi bi-scissors me-3 text-primary"></i>
+            <strong>ChikiCut</strong>
+        </h1>
+        <h2 class="h4 text-muted">Sistema de Gestión para Salones de Belleza</h2>
+        
+        @if (!string.IsNullOrEmpty(Model.UserName))
+        {
+            <div class="mt-4">
+                <div class="badge bg-light text-dark fs-6 px-4 py-2">
+                    ?? Hola <strong>@Model.UserName</strong> 
+                    <span class="badge bg-primary ms-2">@Model.UserRole</span>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">
+                        <i class="bi bi-building me-1"></i>
+                        @(ViewBag.SucursalActual ?? "Todas las sucursales") • 
+                        @DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-MX"))
+                    </small>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Selector de Áreas -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-12 text-center mb-4">
+            <h3 class="h5 text-muted">¿A qué área quieres acceder?</h3>
+        </div>
+    </div>
+
+    <div class="row justify-content-center g-4">
+        <!-- ÁREA DE ADMINISTRACIÓN -->
+        @if (Model.UserLevel >= 3) // Solo Gerentes y Administradores
+        {
+            <div class="col-lg-5 col-md-6">
+                <a href="/Admin/Dashboard" class="text-decoration-none">
+                    <div class="card h-100 shadow-lg border-0 area-card admin-card">
+                        <div class="card-header bg-primary text-white text-center py-3">
+                            <h4 class="mb-0">
+                                <i class="bi bi-gear-fill me-2"></i>
+                                ADMINISTRACIÓN
+                            </h4>
+                            <small>Configuración y Gestión del Sistema</small>
+                        </div>
+                        <div class="card-body text-center p-4">
+                            <div class="mb-4">
+                                <i class="bi bi-server display-1 text-primary mb-3"></i>
+                            </div>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-6">
+                                    <div class="feature-item">
+                                        <i class="bi bi-building text-primary"></i>
+                                        <small>Sucursales</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="feature-item">
+                                        <i class="bi bi-people text-success"></i>
+                                        <small>Empleados</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="feature-item">
+                                        <i class="bi bi-box-seam text-dark"></i>
+                                        <small>Productos</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="feature-item">
+                                        <i class="bi bi-scissors text-secondary"></i>
+                                        <small>Servicios</small>
+                                    </div>
+                                </div>
+                                @if (Model.UserLevel >= 4)
+                                {
+                                    <div class="col-6">
+                                        <div class="feature-item">
+                                            <i class="bi bi-shield-check text-warning"></i>
+                                            <small>Usuarios</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="feature-item">
+                                            <i class="bi bi-grid-3x3-gap text-info"></i>
+                                            <small>Matriz Global</small>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            
+                            <div class="btn btn-primary btn-lg px-5">
+                                <i class="bi bi-arrow-right-circle me-2"></i>
+                                ENTRAR AL PANEL
+                            </div>
+                            
+                            <div class="mt-3">
+                                <span class="badge bg-primary bg-opacity-25 text-primary">
+                                    <i class="bi bi-person-check me-1"></i>
+                                    Solo Administradores
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+
+        <!-- ÁREA DE OPERACIONES -->
+        <div class="col-lg-5 col-md-6">
+            <a href="/Operaciones/Dashboard" class="text-decoration-none">
+                <div class="card h-100 shadow-lg border-0 area-card operaciones-card">
+                    <div class="card-header bg-success text-white text-center py-3">
+                        <h4 class="mb-0">
+                            <i class="bi bi-briefcase-fill me-2"></i>
+                            OPERACIONES
+                        </h4>
+                        <small>Trabajo Diario de la Sucursal</small>
+                    </div>
+                    <div class="card-body text-center p-4">
+                        <div class="mb-4">
+                            <i class="bi bi-shop display-1 text-success mb-3"></i>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div class="feature-item">
+                                    <i class="bi bi-person-hearts text-success"></i>
+                                    <small><a href="/Operaciones/Clientes" class="text-success text-decoration-none">Clientes</a></small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="feature-item">
+                                    <i class="bi bi-calendar-check text-primary"></i>
+                                    <small>Citas</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="feature-item">
+                                    <i class="bi bi-cash-register text-success"></i>
+                                    <small>Punto de Venta</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="feature-item">
+                                    <i class="bi bi-boxes text-info"></i>
+                                    <small>Inventario</small>
+                                </div>
+                            </div>
+                            @if (Model.UserLevel >= 2)
+                            {
+                                <div class="col-6">
+                                    <div class="feature-item">
+                                        <i class="bi bi-wallet text-warning"></i>
+                                        <small>Caja</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="feature-item">
+                                        <i class="bi bi-graph-up text-info"></i>
+                                        <small>Reportes</small>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        
+                        <div class="btn btn-success btn-lg px-5">
+                            <i class="bi bi-arrow-right-circle me-2"></i>
+                            ENTRAR AL PANEL
+                        </div>
+                        
+                        <div class="mt-3">
+                            <span class="badge bg-success bg-opacity-25 text-success">
+                                <i class="bi bi-people me-1"></i>
+                                Todos los Empleados
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Información del Sistema -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center py-4">
+                    <h6 class="text-muted mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Información de tu Sesión
+                    </h6>
+                    <div class="row justify-content-center">
+                        <div class="col-md-3 col-6 mb-2">
+                            <strong>Usuario:</strong><br>
+                            <span class="text-muted">@Model.UserName</span>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2">
+                            <strong>Rol:</strong><br>
+                            <span class="badge @(Model.UserLevel switch 
+                            {
+                                5 => "bg-danger",
+                                4 => "bg-warning", 
+                                3 => "bg-info",
+                                2 => "bg-primary",
+                                1 => "bg-secondary",
+                                _ => "bg-dark"
+                            })">
+                                @Model.UserRole
+                            </span>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2">
+                            <strong>Nivel:</strong><br>
+                            <span class="text-muted">Nivel @Model.UserLevel</span>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2">
+                            <strong>Acceso:</strong><br>
+                            <span class="text-muted">
+                                @if (Model.UserLevel >= 4)
+                                {
+                                    <span class="text-danger">Administrador</span>
+                                }
+                                else if (Model.UserLevel >= 3)
+                                {
+                                    <span class="text-warning">Gerente</span>
+                                }
+                                else if (Model.UserLevel >= 2)
+                                {
+                                    <span class="text-info">Supervisor</span>
+                                }
+                                else
+                                {
+                                    <span class="text-success">Operativo</span>
+                                }
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('?? ChikiCut Hub de Selección cargado');
+            console.log('?? Usuario: @Model.UserName (@Model.UserRole)');
+            console.log('?? Nivel de acceso: @Model.UserLevel');
+            
+            // Verificar que las rutas estén disponibles
+            console.log('?? Rutas disponibles:');
+            console.log('   - Administración: /Admin/Dashboard');
+            console.log('   - Operaciones: /Operaciones/Dashboard');
+            
+            // Agregar efecto visual adicional (opcional)
+            const areaCards = document.querySelectorAll('.area-card');
+            areaCards.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Agregar efecto de clic
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            });
+            
+            // Mostrar mensaje de navegación exitosa
+            console.log('? Navegación del Hub lista. Haz clic en cualquier área para continuar.');
+        });
+    </script>
+}

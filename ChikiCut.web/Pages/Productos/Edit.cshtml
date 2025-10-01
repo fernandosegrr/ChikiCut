@@ -1,0 +1,619 @@
+@page
+@model ChikiCut.web.Pages.Productos.EditModel
+@{
+    ViewData["Title"] = "Editar Producto";
+}
+
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1><i class="bi bi-pencil me-2"></i>Editar Producto</h1>
+            <p class="text-muted">Modifica la información del producto: <strong>@Model.Producto.Nombre</strong></p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" role="group">
+                <a asp-page="Details" asp-route-id="@Model.Producto.Id" class="btn btn-info">
+                    <i class="bi bi-eye me-1"></i>Ver Detalles
+                </a>
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Volver a Lista
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="post" id="editProductoForm">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <input type="hidden" asp-for="Producto.Id" />
+            <input type="hidden" asp-for="Producto.CreatedAt" />
+            <input type="hidden" asp-for="Producto.CreatedBy" />
+
+            <!-- Información Básica -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-info-circle me-2"></i><strong>Información Básica</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Producto.Codigo" class="form-label">Código *</label>
+                                <div class="input-group">
+                                    <input asp-for="Producto.Codigo" class="form-control" maxlength="30" id="codigoInput">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="generateCodigo()" title="Generar código automático">
+                                        <i class="bi bi-magic"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="Producto.Codigo" class="text-danger"></span>
+                                <div class="form-text" id="codigoStatus"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label asp-for="Producto.Nombre" class="form-label">Nombre del Producto *</label>
+                                <input asp-for="Producto.Nombre" class="form-control" maxlength="150">
+                                <span asp-validation-for="Producto.Nombre" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Producto.Marca" class="form-label">Marca *</label>
+                                <input asp-for="Producto.Marca" class="form-control" maxlength="80" id="marcaInput">
+                                <span asp-validation-for="Producto.Marca" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Producto.Sku" class="form-label">SKU</label>
+                                <input asp-for="Producto.Sku" class="form-control" maxlength="50">
+                                <span asp-validation-for="Producto.Sku" class="text-danger"></span>
+                                <div class="form-text">Stock Keeping Unit (opcional)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label asp-for="Producto.Descripcion" class="form-label">Descripción</label>
+                                <textarea asp-for="Producto.Descripcion" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Producto.Descripcion" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clasificación -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-tags me-2"></i><strong>Clasificación</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Producto.Categoria" class="form-label">Categoría *</label>
+                                <select asp-for="Producto.Categoria" class="form-select" id="categoriaSelect">
+                                    @foreach (var categoria in ChikiCut.web.Data.Entities.Producto.Categorias.Lista)
+                                    {
+                                        <option value="@categoria" selected="@(Model.Producto.Categoria == categoria)">@categoria</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Producto.Categoria" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Producto.Subcategoria" class="form-label">Subcategoría</label>
+                                <select asp-for="Producto.Subcategoria" class="form-select">
+                                    <option value="">-- Seleccione una subcategoría --</option>
+                                    @foreach (var subcategoria in ChikiCut.web.Data.Entities.Producto.Subcategorias.Lista)
+                                    {
+                                        <option value="@subcategoria" selected="@(Model.Producto.Subcategoria == subcategoria)">@subcategoria</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Producto.Subcategoria" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Producto.TipoProducto" class="form-label">Tipo de Producto</label>
+                                <select asp-for="Producto.TipoProducto" class="form-select">
+                                    @foreach (var tipo in ChikiCut.web.Data.Entities.Producto.TiposProducto.Lista)
+                                    {
+                                        <option value="@tipo" selected="@(Model.Producto.TipoProducto == tipo)">@tipo</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Producto.UnidadMedida" class="form-label">Unidad de Medida</label>
+                                <select asp-for="Producto.UnidadMedida" class="form-select">
+                                    @foreach (var unidad in ChikiCut.web.Data.Entities.Producto.UnidadesMedida.Lista)
+                                    {
+                                        <option value="@unidad" selected="@(Model.Producto.UnidadMedida == unidad)">@unidad</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Producto.ContenidoNeto" class="form-label">Contenido Neto</label>
+                                <input asp-for="Producto.ContenidoNeto" class="form-control" type="number" step="0.001">
+                                <span asp-validation-for="Producto.ContenidoNeto" class="text-danger"></span>
+                                <div class="form-text">Ej: 500 (para 500ml)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Precios y Costos -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-currency-dollar me-2"></i><strong>Precios y Costos</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Producto.PrecioBase" class="form-label">Precio Base *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Producto.PrecioBase" class="form-control" type="number" step="0.01" id="precioBaseInput">
+                                </div>
+                                <span asp-validation-for="Producto.PrecioBase" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Producto.CostoPromedio" class="form-label">Costo Promedio</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Producto.CostoPromedio" class="form-control" type="number" step="0.01" id="costoInput">
+                                </div>
+                                <span asp-validation-for="Producto.CostoPromedio" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Producto.MargenGananciaSugerido" class="form-label">Margen Sugerido (%)</label>
+                                <input asp-for="Producto.MargenGananciaSugerido" class="form-control" type="number" step="0.01" min="0" max="100" id="margenInput">
+                                <span asp-validation-for="Producto.MargenGananciaSugerido" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Producto.ComisionVenta" class="form-label">Comisión de Venta (%)</label>
+                                <input asp-for="Producto.ComisionVenta" class="form-control" type="number" step="0.01" min="0" max="100">
+                                <span asp-validation-for="Producto.ComisionVenta" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Producto.DescuentoMaximo" class="form-label">Descuento Máximo (%)</label>
+                                <input asp-for="Producto.DescuentoMaximo" class="form-control" type="number" step="0.01" min="0" max="100">
+                                <span asp-validation-for="Producto.DescuentoMaximo" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info small">
+                        <i class="bi bi-calculator me-1"></i>
+                        <strong>Calculadora de margen:</strong> <span id="calculoMargen">Introduce precio y costo para ver el margen</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control de Inventario -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-boxes me-2"></i><strong>Control de Inventario</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-check mb-3">
+                                <input asp-for="Producto.RequiereInventario" class="form-check-input" id="requiereInventarioCheck">
+                                <label asp-for="Producto.RequiereInventario" class="form-check-label">
+                                    Requiere Control de Inventario
+                                </label>
+                                <div class="form-text">Activar para productos que necesitan control de stock</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="inventarioConfig">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Producto.StockMinimo" class="form-label">Stock Mínimo</label>
+                                    <input asp-for="Producto.StockMinimo" class="form-control" type="number" min="0">
+                                    <span asp-validation-for="Producto.StockMinimo" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Producto.StockMaximo" class="form-label">Stock Máximo</label>
+                                    <input asp-for="Producto.StockMaximo" class="form-control" type="number" min="0">
+                                    <span asp-validation-for="Producto.StockMaximo" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Producto.PuntoReorden" class="form-label">Punto de Reorden</label>
+                                    <input asp-for="Producto.PuntoReorden" class="form-control" type="number" min="0">
+                                    <span asp-validation-for="Producto.PuntoReorden" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Características Especiales -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-star me-2"></i><strong>Características Especiales</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check mb-3">
+                                <input asp-for="Producto.EsPerecedero" class="form-check-input" id="perecederoCheck">
+                                <label asp-for="Producto.EsPerecedero" class="form-check-label">
+                                    Es Perecedero
+                                </label>
+                            </div>
+                            <div id="perecederoConfig">
+                                <div class="mb-3">
+                                    <label asp-for="Producto.VidaUtilDias" class="form-label">Vida Útil (días)</label>
+                                    <input asp-for="Producto.VidaUtilDias" class="form-control" type="number" min="1">
+                                    <span asp-validation-for="Producto.VidaUtilDias" class="text-danger"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="Producto.TemperaturaAlmacenamiento" class="form-label">Temperatura de Almacenamiento</label>
+                                    <select asp-for="Producto.TemperaturaAlmacenamiento" class="form-select">
+                                        <option value="Ambiente" selected="@(Model.Producto.TemperaturaAlmacenamiento == "Ambiente")">Ambiente</option>
+                                        <option value="Refrigerado" selected="@(Model.Producto.TemperaturaAlmacenamiento == "Refrigerado")">Refrigerado</option>
+                                        <option value="Congelado" selected="@(Model.Producto.TemperaturaAlmacenamiento == "Congelado")">Congelado</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check mb-3">
+                                <input asp-for="Producto.EsControlado" class="form-check-input">
+                                <label asp-for="Producto.EsControlado" class="form-check-label">
+                                    Es Controlado
+                                </label>
+                                <div class="form-text">Requiere permisos especiales para venta</div>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input asp-for="Producto.EsDestacado" class="form-check-input">
+                                <label asp-for="Producto.EsDestacado" class="form-check-label">
+                                    Es Destacado
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input asp-for="Producto.EsNovedad" class="form-check-input">
+                                <label asp-for="Producto.EsNovedad" class="form-check-label">
+                                    Es Novedad
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-plus-circle me-2"></i><strong>Información Adicional</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Producto.ImagenPrincipalUrl" class="form-label">URL de Imagen Principal</label>
+                                <input asp-for="Producto.ImagenPrincipalUrl" class="form-control">
+                                <span asp-validation-for="Producto.ImagenPrincipalUrl" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Producto.CodigoBarras" class="form-label">Código de Barras</label>
+                                <input asp-for="Producto.CodigoBarras" class="form-control" maxlength="20">
+                                <span asp-validation-for="Producto.CodigoBarras" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check mb-3">
+                                <input asp-for="Producto.IsActive" class="form-check-input">
+                                <label asp-for="Producto.IsActive" class="form-check-label">
+                                    Producto Activo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tags -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-tags me-2"></i><strong>Etiquetas</strong>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Etiquetas para búsqueda</label>
+                        <input type="text" id="tagInput" class="form-control" placeholder="Escribe una etiqueta y presiona Enter">
+                    </div>
+                    <div id="tagsContainer" class="mb-3">
+                        <!-- Tags se cargan dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="d-flex gap-2 mb-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i>Guardar Cambios
+                </button>
+                <a asp-page="Details" asp-route-id="@Model.Producto.Id" class="btn btn-info">
+                    <i class="bi bi-eye me-1"></i>Ver Detalles
+                </a>
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Panel de Ayuda -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-lightbulb me-2"></i><strong>Consejos de Edición</strong>
+            </div>
+            <div class="card-body">
+                <ul class="small">
+                    <li>Los cambios afectarán a todas las sucursales que tengan este producto</li>
+                    <li>El código debe mantenerse único en todo el sistema</li>
+                    <li>Si cambias el control de inventario, revisa las configuraciones por sucursal</li>
+                    <li>Marca como inactivo para ocultar sin eliminar</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Calculadora de Precios</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <label class="form-label small">Costo de Producto:</label>
+                        <input type="number" class="form-control form-control-sm mb-2" id="calcCosto" placeholder="0.00">
+                        
+                        <label class="form-label small">Margen Deseado (%):</label>
+                        <input type="number" class="form-control form-control-sm mb-2" id="calcMargen" placeholder="30">
+                        
+                        <button type="button" class="btn btn-sm btn-primary w-100" onclick="calcularPrecio()">Calcular Precio</button>
+                        
+                        <div class="mt-2 small" id="resultadoCalculo"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-clock-history me-2"></i><strong>Información del Sistema</strong>
+            </div>
+            <div class="card-body">
+                <dl class="row small">
+                    <dt class="col-5">Creado:</dt>
+                    <dd class="col-7">@Model.Producto.CreatedAt.ToString("dd/MM/yyyy")</dd>
+                    @if (Model.Producto.UpdatedAt.HasValue)
+                    {
+                        <dt class="col-5">Modificado:</dt>
+                        <dd class="col-7">@Model.Producto.UpdatedAt.Value.ToString("dd/MM/yyyy")</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        let tags = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TagsSeleccionados));
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle de configuración de inventario
+            const requiereInventarioCheck = document.getElementById('requiereInventarioCheck');
+            const inventarioConfig = document.getElementById('inventarioConfig');
+            
+            function toggleInventarioConfig() {
+                inventarioConfig.style.display = requiereInventarioCheck.checked ? 'block' : 'none';
+            }
+            
+            requiereInventarioCheck.addEventListener('change', toggleInventarioConfig);
+            toggleInventarioConfig(); // Ejecutar al cargar
+            
+            // Toggle de configuración de perecedero
+            const perecederoCheck = document.getElementById('perecederoCheck');
+            const perecederoConfig = document.getElementById('perecederoConfig');
+            
+            function togglePerecederoConfig() {
+                perecederoConfig.style.display = perecederoCheck.checked ? 'block' : 'none';
+            }
+            
+            perecederoCheck.addEventListener('change', togglePerecederoConfig);
+            togglePerecederoConfig(); // Ejecutar al cargar
+            
+            // Validación de código en tiempo real
+            const codigoInput = document.getElementById('codigoInput');
+            let codigoTimeout;
+            
+            codigoInput.addEventListener('input', function() {
+                clearTimeout(codigoTimeout);
+                codigoTimeout = setTimeout(() => validateCodigo(this.value), 500);
+            });
+            
+            // Cálculo automático de margen
+            const precioBaseInput = document.getElementById('precioBaseInput');
+            const costoInput = document.getElementById('costoInput');
+            
+            function updateMargenCalculo() {
+                const precio = parseFloat(precioBaseInput.value) || 0;
+                const costo = parseFloat(costoInput.value) || 0;
+                const calculoElement = document.getElementById('calculoMargen');
+                
+                if (precio > 0 && costo > 0) {
+                    const margen = ((precio - costo) / costo) * 100;
+                    const ganancia = precio - costo;
+                    calculoElement.innerHTML = `Margen: ${margen.toFixed(2)}% | Ganancia: $${ganancia.toFixed(2)}`;
+                } else {
+                    calculoElement.innerHTML = 'Introduce precio y costo para ver el margen';
+                }
+            }
+            
+            [precioBaseInput, costoInput].forEach(input => {
+                if (input) input.addEventListener('input', updateMargenCalculo);
+            });
+            
+            // Manejo de etiquetas
+            const tagInput = document.getElementById('tagInput');
+            tagInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    agregarTag(this.value.trim());
+                    this.value = '';
+                }
+            });
+            
+            actualizarTagsDisplay();
+            updateMargenCalculo(); // Ejecutar al cargar para mostrar cálculos actuales
+        });
+        
+        async function validateCodigo(codigo) {
+            const statusElement = document.getElementById('codigoStatus');
+            const productoId = document.querySelector('input[name="Producto.Id"]').value;
+            
+            if (!codigo) {
+                statusElement.innerHTML = '';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`?handler=ValidateCodigo&codigo=${encodeURIComponent(codigo)}&id=${productoId}`);
+                const result = await response.json();
+                
+                statusElement.innerHTML = result.isValid 
+                    ? `<span class="text-success"><i class="bi bi-check-circle me-1"></i>${result.message}</span>`
+                    : `<span class="text-danger"><i class="bi bi-x-circle me-1"></i>${result.message}</span>`;
+            } catch (error) {
+                statusElement.innerHTML = '<span class="text-warning">Error al validar código</span>';
+            }
+        }
+        
+        async function generateCodigo() {
+            const categoria = document.getElementById('categoriaSelect').value;
+            const marca = document.getElementById('marcaInput').value;
+            const productoId = document.querySelector('input[name="Producto.Id"]').value;
+            
+            try {
+                const formData = new FormData();
+                formData.append('categoria', categoria);
+                formData.append('marca', marca);
+                formData.append('id', productoId);
+                
+                const response = await fetch('?handler=GenerateCodigo', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('codigoInput').value = result.codigo;
+                    validateCodigo(result.codigo);
+                }
+            } catch (error) {
+                console.error('Error generating code:', error);
+            }
+        }
+        
+        function agregarTag(tag) {
+            if (tag && !tags.includes(tag)) {
+                tags.push(tag);
+                actualizarTagsDisplay();
+            }
+        }
+        
+        function eliminarTag(tag) {
+            tags = tags.filter(t => t !== tag);
+            actualizarTagsDisplay();
+        }
+        
+        function actualizarTagsDisplay() {
+            const container = document.getElementById('tagsContainer');
+            container.innerHTML = tags.map(tag => 
+                `<span class="badge bg-primary me-1 mb-1">
+                    #${tag} 
+                    <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.7em;" onclick="eliminarTag('${tag}')"></button>
+                </span>`
+            ).join('');
+            
+            // Actualizar campos hidden para envío
+            const existingInputs = document.querySelectorAll('input[name="TagsSeleccionados"]');
+            existingInputs.forEach(input => input.remove());
+            
+            tags.forEach(tag => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'TagsSeleccionados';
+                input.value = tag;
+                document.getElementById('editProductoForm').appendChild(input);
+            });
+        }
+        
+        function calcularPrecio() {
+            const costo = parseFloat(document.getElementById('calcCosto').value) || 0;
+            const margen = parseFloat(document.getElementById('calcMargen').value) || 0;
+            
+            if (costo > 0 && margen > 0) {
+                const precio = costo * (1 + margen / 100);
+                const ganancia = precio - costo;
+                
+                document.getElementById('resultadoCalculo').innerHTML = 
+                    `<strong>Precio sugerido: $${precio.toFixed(2)}</strong><br>
+                     Ganancia: $${ganancia.toFixed(2)}`;
+                     
+                // Opcional: llenar el campo de precio base
+                document.getElementById('precioBaseInput').value = precio.toFixed(2);
+                document.getElementById('costoInput').value = costo.toFixed(2);
+            } else {
+                document.getElementById('resultadoCalculo').innerHTML = 
+                    '<span class="text-warning">Introduce costo y margen válidos</span>';
+            }
+        }
+    </script>
+}

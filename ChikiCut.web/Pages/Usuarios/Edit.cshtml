@@ -1,0 +1,361 @@
+@page
+@model ChikiCut.web.Pages.Usuarios.EditModel
+@{
+    ViewData["Title"] = "Editar Usuario";
+}
+
+<div class="page-header mb-4">
+    <h1><i class="bi bi-pencil me-2"></i>Editar Usuario</h1>
+    <p class="text-muted">Modifica la información del usuario: @Model.Usuario.Email</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="post">
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            <input type="hidden" asp-for="Usuario.Id" />
+            <input type="hidden" asp-for="Usuario.EmpleadoId" />
+            <input type="hidden" asp-for="Usuario.CreatedAt" />
+            <input type="hidden" asp-for="Usuario.CodigoUsuario" />
+
+            <!-- Información del Empleado (Solo lectura) -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-person-badge me-2"></i><strong>Empleado Vinculado</strong>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Empleado:</strong> @Model.EmpleadoInfo
+                        <br><small>La vinculación del empleado no se puede modificar. Para cambiarla, debe crear un nuevo usuario.</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del Usuario -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-person-circle me-2"></i><strong>Información del Usuario</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Usuario.CodigoUsuario" class="form-label">Código de Usuario</label>
+                                <input asp-for="Usuario.CodigoUsuario" class="form-control" readonly />
+                                <div class="form-text">El código de usuario se genera automáticamente y no se puede modificar.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Usuario.Email" class="form-label">Email *</label>
+                                <input asp-for="Usuario.Email" type="email" class="form-control" />
+                                <span asp-validation-for="Usuario.Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Usuario.RolId" class="form-label">Rol *</label>
+                                <select asp-for="Usuario.RolId" asp-items="Model.RolOptions" class="form-select">
+                                    <option value="">-- Seleccione un rol --</option>
+                                </select>
+                                <span asp-validation-for="Usuario.RolId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3 mt-4">
+                                <div class="form-check">
+                                    <input asp-for="Usuario.IsActive" class="form-check-input" />
+                                    <label asp-for="Usuario.IsActive" class="form-check-label">
+                                        Usuario Activo
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de Contraseña -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-shield-lock me-2"></i><strong>Configuración de Contraseña</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-check mb-3">
+                                <input asp-for="ChangePassword" class="form-check-input" id="changePasswordCheck" />
+                                <label asp-for="ChangePassword" class="form-check-label" for="changePasswordCheck">
+                                    Cambiar contraseña
+                                </label>
+                                <div class="form-text">Marque esta opción solo si desea cambiar la contraseña del usuario.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" id="passwordSection" style="display: none;">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="NewPassword" class="form-label">Nueva Contraseña</label>
+                                <input asp-for="NewPassword" type="password" class="form-control" />
+                                <span asp-validation-for="NewPassword" class="text-danger"></span>
+                                <div class="form-text">Mínimo 6 caracteres.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ConfirmPassword" class="form-label">Confirmar Nueva Contraseña</label>
+                                <input asp-for="ConfirmPassword" type="password" class="form-control" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NUEVA SECCIÓN: Sucursales Asignadas -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-buildings me-2"></i><strong>Sucursales Asignadas</strong>
+                </div>
+                <div class="card-body">
+                    @if (Model.SucursalesActuales.Any())
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Sucursales actuales:</strong> 
+                            @foreach (var sucursal in Model.SucursalesActuales)
+                            {
+                                <span class="badge bg-primary me-1">@sucursal</span>
+                            }
+                        </div>
+                    }
+                    
+                    @if (!Model.TieneAccesoGlobal && !Model.SucursalesDisponibles.Any())
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Sin sucursales disponibles:</strong> No tienes permisos para modificar las sucursales de este usuario.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="UsarSucursalEmpleado" class="form-check-input" id="usarSucursalEmpleado">
+                                <label asp-for="UsarSucursalEmpleado" class="form-check-label">
+                                    <strong>Usar solo la sucursal del empleado</strong>
+                                </label>
+                                <div class="form-text">El usuario tendrá acceso únicamente a la sucursal donde trabaja su empleado asociado.</div>
+                            </div>
+                        </div>
+
+                        <div id="sucursalesManual">
+                            <hr>
+                            <h6><i class="bi bi-gear me-1"></i>Configuración Manual de Sucursales</h6>
+                            <p class="text-muted small mb-3">
+                                Selecciona las sucursales específicas a las que este usuario tendrá acceso.
+                                @if (!Model.TieneAccesoGlobal)
+                                {
+                                    <strong>Solo puedes asignar sucursales a las que tú tienes acceso.</strong>
+                                }
+                            </p>
+                            
+                            <span asp-validation-for="SucursalesSeleccionadas" class="text-danger"></span>
+                            
+                            <div class="row">
+                                @foreach (var sucursal in Model.SucursalesDisponibles)
+                                {
+                                    <div class="col-md-6 mb-2">
+                                        <div class="form-check">
+                                            <input type="checkbox" 
+                                                   name="SucursalesSeleccionadas" 
+                                                   value="@sucursal.Id" 
+                                                   class="form-check-input" 
+                                                   id="sucursal_@sucursal.Id"
+                                                   checked="@Model.SucursalesSeleccionadas.Contains(sucursal.Id)">
+                                            <label class="form-check-label" for="sucursal_@sucursal.Id">
+                                                <i class="bi bi-building me-1"></i>
+                                                <strong>@sucursal.Name</strong>
+                                                <small class="text-muted d-block">@sucursal.City, @sucursal.State</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            
+                            @if (!Model.SucursalesDisponibles.Any())
+                            {
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    No hay sucursales disponibles para asignar.
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-sm btn-outline-success" onclick="seleccionarTodasSucursales()">
+                                        <i class="bi bi-check-all me-1"></i>Seleccionar Todas
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="limpiarSucursales()">
+                                        <i class="bi bi-x-circle me-1"></i>Limpiar Selección
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i>Guardar Cambios
+                </button>
+                <a asp-page="Details" asp-route-id="@Model.Usuario.Id" class="btn btn-info">
+                    <i class="bi bi-eye me-1"></i>Ver Detalles
+                </a>
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i><strong>Información</strong>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted"><strong>Campos editables:</strong></p>
+                <ul class="small text-muted">
+                    <li>Email del usuario</li>
+                    <li>Rol y permisos</li>
+                    <li>Estado activo/inactivo</li>
+                    <li>Contraseña (opcional)</li>
+                </ul>
+                
+                <hr>
+                
+                <p class="small text-muted"><strong>Campos no editables:</strong></p>
+                <ul class="small text-muted">
+                    <li>Código de usuario</li>
+                    <li>Empleado vinculado</li>
+                    <li>Fecha de creación</li>
+                    <li>Historial de accesos</li>
+                </ul>
+                
+                <hr>
+                
+                <p class="small text-muted"><strong>Nota:</strong> Los cambios en el rol afectarán inmediatamente los permisos del usuario.</p>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-clock-history me-2"></i><strong>Información del Sistema</strong>
+            </div>
+            <div class="card-body">
+                <dl class="row small">
+                    <dt class="col-sm-6">Código:</dt>
+                    <dd class="col-sm-6">@Model.Usuario.CodigoUsuario</dd>
+                    <dt class="col-sm-6">Creado:</dt>
+                    <dd class="col-sm-6">@Model.Usuario.CreatedAt.ToString("dd/MM/yyyy")</dd>
+                    @if (Model.Usuario.UpdatedAt.HasValue)
+                    {
+                        <dt class="col-sm-6">Modificado:</dt>
+                        <dd class="col-sm-6">@Model.Usuario.UpdatedAt.Value.ToString("dd/MM/yyyy")</dd>
+                    }
+                    @if (Model.Usuario.UltimoAcceso.HasValue)
+                    {
+                        <dt class="col-sm-6">Último acceso:</dt>
+                        <dd class="col-sm-6">@Model.Usuario.UltimoAcceso.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Control de cambio de contraseña
+            const changePasswordCheck = document.getElementById('changePasswordCheck');
+            const passwordSection = document.getElementById('passwordSection');
+            const newPasswordInput = document.getElementById('NewPassword');
+            const confirmPasswordInput = document.getElementById('ConfirmPassword');
+            
+            // Control de sucursales: automático vs manual
+            const usarSucursalEmpleado = document.getElementById('usarSucursalEmpleado');
+            const sucursalesManual = document.getElementById('sucursalesManual');
+            
+            function toggleSucursalesMode() {
+                if (usarSucursalEmpleado.checked) {
+                    sucursalesManual.style.display = 'none';
+                    // Desmarcar todas las sucursales manuales
+                    document.querySelectorAll('input[name="SucursalesSeleccionadas"]').forEach(cb => {
+                        cb.checked = false;
+                    });
+                } else {
+                    sucursalesManual.style.display = 'block';
+                }
+            }
+            
+            if (usarSucursalEmpleado) {
+                usarSucursalEmpleado.addEventListener('change', toggleSucursalesMode);
+                toggleSucursalesMode(); // Inicializar
+            }
+            
+            // Mostrar/ocultar sección de contraseña
+            if (changePasswordCheck) {
+                changePasswordCheck.addEventListener('change', function() {
+                    if (this.checked) {
+                        passwordSection.style.display = 'block';
+                        newPasswordInput.required = true;
+                        confirmPasswordInput.required = true;
+                    } else {
+                        passwordSection.style.display = 'none';
+                        newPasswordInput.required = false;
+                        confirmPasswordInput.required = false;
+                        newPasswordInput.value = '';
+                        confirmPasswordInput.value = '';
+                    }
+                });
+            }
+            
+            // Validación en tiempo real de contraseñas
+            function validatePasswords() {
+                if (changePasswordCheck && changePasswordCheck.checked && newPasswordInput.value && confirmPasswordInput.value) {
+                    if (newPasswordInput.value !== confirmPasswordInput.value) {
+                        confirmPasswordInput.setCustomValidity('Las contraseñas no coinciden');
+                    } else {
+                        confirmPasswordInput.setCustomValidity('');
+                    }
+                }
+            }
+            
+            if (newPasswordInput && confirmPasswordInput) {
+                newPasswordInput.addEventListener('input', validatePasswords);
+                confirmPasswordInput.addEventListener('input', validatePasswords);
+            }
+
+            // Helpers para sucursales
+            window.seleccionarTodasSucursales = function() {
+                document.querySelectorAll('input[name="SucursalesSeleccionadas"]').forEach(cb => {
+                    cb.checked = true;
+                });
+            };
+
+            window.limpiarSucursales = function() {
+                document.querySelectorAll('input[name="SucursalesSeleccionadas"]').forEach(cb => {
+                    cb.checked = false;
+                });
+            };
+        });
+    </script>
+}

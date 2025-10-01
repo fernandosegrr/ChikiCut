@@ -1,0 +1,125 @@
+@page
+@model ChikiCut.web.Pages.Empleados.DeleteModel
+@{
+    ViewData["Title"] = Model.TipoOperacion == "desactivar" ? "Desactivar Empleado" : "Reactivar Empleado";
+    var isDesactivar = Model.TipoOperacion == "desactivar";
+    var buttonClass = isDesactivar ? "btn-warning" : "btn-success";
+    var iconClass = isDesactivar ? "bi-person-dash" : "bi-person-check";
+    var actionText = isDesactivar ? "Desactivar" : "Reactivar";
+}
+
+<div class="page-header mb-4">
+    <h1 class="@(isDesactivar ? "text-warning" : "text-success")">
+        <i class="@iconClass me-2"></i>@actionText Empleado
+    </h1>
+    <p class="text-muted">
+        @if (isDesactivar)
+        {
+            <span>¿Está seguro de que desea desactivar este empleado? Podrá reactivarlo más tarde.</span>
+        }
+        else
+        {
+            <span>¿Está seguro de que desea reactivar este empleado?</span>
+        }
+    </p>
+</div>
+
+@if (Model.TieneRelaciones)
+{
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <strong>No se puede @(Model.TipoOperacion):</strong> @Model.MensajeRelaciones
+    </div>
+}
+
+<div class="card">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">
+            <i class="bi bi-person me-2"></i>@Model.Empleado.NombreCompleto
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-5">Código:</dt>
+                    <dd class="col-sm-7"><span class="badge bg-secondary">@Model.Empleado.CodigoEmpleado</span></dd>
+                    <dt class="col-sm-5">Puesto:</dt>
+                    <dd class="col-sm-7"><span class="badge bg-info">@Model.Empleado.PuestoNombre</span></dd>
+                    <dt class="col-sm-5">Sucursal:</dt>
+                    <dd class="col-sm-7">@Model.Empleado.Sucursal.Name</dd>
+                    <dt class="col-sm-5">Teléfono:</dt>
+                    <dd class="col-sm-7">@Model.Empleado.Telefono</dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-5">Email:</dt>
+                    <dd class="col-sm-7">@(Model.Empleado.Email ?? "No registrado")</dd>
+                    <dt class="col-sm-5">Fecha Ingreso:</dt>
+                    <dd class="col-sm-7">@Model.Empleado.FechaIngreso.ToString("dd/MM/yyyy")</dd>
+                    <dt class="col-sm-5">Estado Actual:</dt>
+                    <dd class="col-sm-7">
+                        <span class="badge @(Model.Empleado.IsActive ? "bg-success" : "bg-danger")">
+                            @(Model.Empleado.IsActive ? "Activo" : "Inactivo")
+                        </span>
+                    </dd>
+                    @if (Model.Empleado.FechaBaja.HasValue)
+                    {
+                        <dt class="col-sm-5">Fecha Baja:</dt>
+                        <dd class="col-sm-7">@Model.Empleado.FechaBaja.Value.ToString("dd/MM/yyyy")</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="post" class="mt-4">
+    <input type="hidden" asp-for="Empleado.Id" />
+    
+    @if (!Model.TieneRelaciones)
+    {
+        @if (isDesactivar)
+        {
+            <div class="alert alert-warning" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Información:</strong> El empleado será desactivado pero sus datos se conservarán en el sistema para mantener el historial. Se registrará la fecha de baja automáticamente.
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Información:</strong> El empleado será reactivado y podrá volver a operar normalmente en el sistema.
+            </div>
+        }
+        
+        <button type="submit" class="btn @buttonClass">
+            <i class="@iconClass me-1"></i>Sí, @actionText Empleado
+        </button>
+    }
+    
+    <a asp-page="Index" class="btn btn-secondary @(Model.TieneRelaciones ? "ms-0" : "ms-2")">
+        <i class="bi bi-arrow-left me-1"></i>@(Model.TieneRelaciones ? "Volver" : "Cancelar")
+    </a>
+</form>
+
+<!-- Información adicional sobre eliminación lógica -->
+@if (!Model.TieneRelaciones)
+{
+    <div class="card mt-4 bg-light">
+        <div class="card-body">
+            <h6 class="card-title"><i class="bi bi-lightbulb me-2"></i>¿Por qué no eliminamos completamente?</h6>
+            <p class="card-text small mb-0">
+                Los empleados nunca se eliminan completamente del sistema para preservar:
+            </p>
+            <ul class="small mb-0 mt-2">
+                <li>Historial de servicios y atención</li>
+                <li>Registros contables y fiscales</li>
+                <li>Trazabilidad de operaciones</li>
+                <li>Cumplimiento de normativas laborales</li>
+            </ul>
+        </div>
+    </div>
+}

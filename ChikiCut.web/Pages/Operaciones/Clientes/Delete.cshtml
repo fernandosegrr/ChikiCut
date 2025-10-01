@@ -1,0 +1,29 @@
+@page
+@model ChikiCut.web.Pages.Operaciones.Clientes.DeleteModel
+@{
+    ViewData["Title"] = "Eliminar Cliente";
+}
+
+<h1>Eliminar Cliente</h1>
+
+<div class="alert alert-warning">
+    <strong>¡Advertencia!</strong> Esta acción eliminará al cliente de la base de datos. Esta operación no se puede deshacer.<br />
+    Por favor, confirma que deseas continuar.
+</div>
+
+<form method="post">
+    <div class="mb-3">
+        <label class="form-label">Escribe "ELIMINAR" para confirmar:</label>
+        <input type="text" name="ConfirmDelete" class="form-control" required />
+    </div>
+    <dl class="row">
+        <dt class="col-sm-2">Nombre Completo</dt>
+        <dd class="col-sm-10">@Model.Cliente.NombreCompleto</dd>
+        <dt class="col-sm-2">Email</dt>
+        <dd class="col-sm-10">@Model.Cliente.Email</dd>
+        <dt class="col-sm-2">Teléfono</dt>
+        <dd class="col-sm-10">@Model.Cliente.Telefono</dd>
+    </dl>
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
+</form>

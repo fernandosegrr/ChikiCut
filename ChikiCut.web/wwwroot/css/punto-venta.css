@@ -1,0 +1,77 @@
+.pv-matrix {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    max-height: 340px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    justify-content: flex-start;
+}
+.pv-matrix .pv-btn {
+    flex: 1 0 18%;
+    min-width: 140px;
+    max-width: 180px;
+    min-height: 90px;
+    background: #f8f9fa;
+    border: 2.5px solid #aee2ff;
+    border-radius: 18px;
+    color: #2196f3;
+    font-weight: 600;
+    font-size: 1.1em;
+    box-shadow: 0 2px 8px 0 #e3f2fd;
+    transition: transform 0.1s, box-shadow 0.1s, background 0.2s;
+    margin-bottom: 0.2rem;
+    position: relative;
+    cursor: pointer;
+    white-space: normal;
+    word-break: keep-all;
+    text-align: center;
+    padding: 0.5em 0.3em 0.5em 0.3em;
+    background-image: none !important; /* Elimina cualquier fondo de líneas o gradientes extraños */
+}
+.pv-matrix .pv-btn:hover, .pv-matrix .pv-btn:focus {
+    background: #e3f2fd;
+    color: #1976d2;
+    transform: scale(1.05);
+    box-shadow: 0 4px 16px 0 #b3e5fc;
+    z-index: 2;
+    background-image: none !important; /* Elimina cualquier fondo de líneas o gradientes extraños */
+}
+.pv-matrix .pv-btn .pv-emoji {
+    font-size: 2em;
+    display: block;
+    margin-bottom: 0.2em;
+}
+.pv-matrix .pv-btn .pv-label {
+    font-size: 1em;
+    font-weight: 700;
+    margin-bottom: 0.1em;
+    white-space: normal;
+    word-break: keep-all;
+    text-align: center;
+    display: block;
+}
+.pv-matrix .pv-btn .pv-label.long {
+    font-size: 0.95em;
+}
+.pv-matrix .pv-btn .pv-price {
+    font-size: 1.1em;
+    color: #43a047;
+    font-weight: 700;
+}
+.pv-total-sticky {
+    position: sticky;
+    top: 10px;
+    right: 0;
+    z-index: 10;
+    background: #fffbe7;
+    border: 2px solid #ffe082;
+    border-radius: 16px;
+    padding: 0.7em 1.2em;
+    font-size: 1.5em;
+    color: #ff9800;
+    box-shadow: 0 2px 8px 0 #ffe0b2;
+    margin-bottom: 1em;
+    text-align: right;
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+}

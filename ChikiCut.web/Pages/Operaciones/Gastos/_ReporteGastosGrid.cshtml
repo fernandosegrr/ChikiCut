@@ -1,0 +1,80 @@
+@model IReadOnlyList<ChikiCut.web.Pages.Operaciones.Gastos.GastoGridRowVm>
+@using System.Text.Json
+@{
+    var total = Model?.Sum(x => x.Monto) ?? 0;
+    var totalesPorMetodo = Model?.GroupBy(x => x.MetodoPago)
+        .ToDictionary(g => g.Key, g => g.Sum(x => x.Monto)) ?? new Dictionary<string, decimal>();
+    var conceptos = Model?.GroupBy(x => x.ConceptoNombre)
+        .ToDictionary(g => g.Key, g => g.Sum(x => x.Monto)) ?? new Dictionary<string, decimal>();
+    var chartLabelsJson = JsonSerializer.Serialize(conceptos.Keys);
+    var chartDataJson = JsonSerializer.Serialize(conceptos.Values);
+    // Filtros actuales para exportación
+    var filtroFecha = Context.Request.Query["fecha"].ToString();
+    var filtroSucursalId = Context.Request.Query["sucursalId"].ToString();
+}
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">No se encontraron gastos para los filtros seleccionados.</div>
+}
+else
+{
+    <div class="mb-2 d-flex justify-content-end gap-2">
+        <form method="post" asp-page-handler="ExportarExcel" asp-route-fecha="@filtroFecha" asp-route-sucursalId="@filtroSucursalId" style="display:inline">
+            <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+        </form>
+        <form method="post" asp-page-handler="ExportarPdf" asp-route-fecha="@filtroFecha" asp-route-sucursalId="@filtroSucursalId" style="display:inline">
+            <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-file-earmark-pdf"></i> Exportar PDF</button>
+        </form>
+    </div>
+    <div class="mb-2">
+        <div style="width:100%;max-width:100%;">
+            <canvas id="gastosConceptoChart" style="width:100%;height:320px;max-width:100%;display:block;" data-labels='@Html.Raw(chartLabelsJson)'
+                data-values='@Html.Raw(chartDataJson)'></canvas>
+        </div>
+    </div>
+    <div class="table-responsive mt-2">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Sucursal</th>
+                    <th>Concepto</th>
+                    <th>Monto</th>
+                    <th>Método de Pago</th>
+                    <th>Descripción</th>
+                    <th>Observaciones</th>
+                    <th>Comprobante</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var g in Model)
+            {
+                <tr>
+                    <td>@g.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@g.SucursalNombre</td>
+                    <td>@g.ConceptoNombre</td>
+                    <td class="text-end">@g.Monto.ToString("C")</td>
+                    <td>
+                        <span class="badge bg-info text-dark">@g.MetodoPago</span>
+                    </td>
+                    <td>@g.Descripcion</td>
+                    <td>@g.Observaciones</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(g.ComprobanteUrl))
+                        {
+                            <button type="button" class="btn btn-outline-info btn-sm btn-ver-comprobante" data-url="@g.ComprobanteUrl">
+                                <i class="bi bi-eye"></i> Ver
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin comprobante</span>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+<!-- Elimina el script de Chart.js y la función de la gráfica de este partial -->

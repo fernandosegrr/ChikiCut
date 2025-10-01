@@ -1,0 +1,238 @@
+@page
+@model ChikiCut.web.Pages.Sucursales.CreateModel
+
+@{
+    ViewData["Title"] = "Crear Nueva Sucursal";
+}
+
+<h1>Crear Nueva Sucursal</h1>
+
+<h4>Información de la Sucursal</h4>
+<hr />
+<div class="row">
+    <div class="col-md-8">
+        <form method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Sucursal.Code" class="control-label"></label>
+                        <input asp-for="Sucursal.Code" class="form-control" />
+                        <span asp-validation-for="Sucursal.Code" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Sucursal.Name" class="control-label"></label>
+                        <input asp-for="Sucursal.Name" class="form-control" />
+                        <span asp-validation-for="Sucursal.Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Sucursal.RazonSocial" class="control-label"></label>
+                        <input asp-for="Sucursal.RazonSocial" class="form-control" />
+                        <span asp-validation-for="Sucursal.RazonSocial" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Sucursal.Rfc" class="control-label"></label>
+                        <input asp-for="Sucursal.Rfc" class="form-control" />
+                        <span asp-validation-for="Sucursal.Rfc" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Sucursal.Phone" class="control-label"></label>
+                        <input asp-for="Sucursal.Phone" class="form-control" />
+                        <span asp-validation-for="Sucursal.Phone" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Sucursal.Email" class="control-label"></label>
+                        <input asp-for="Sucursal.Email" class="form-control" />
+                        <span asp-validation-for="Sucursal.Email" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Sucursal.AddressLine1" class="control-label"></label>
+                        <input asp-for="Sucursal.AddressLine1" class="form-control" />
+                        <span asp-validation-for="Sucursal.AddressLine1" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Sucursal.AddressLine2" class="control-label"></label>
+                        <input asp-for="Sucursal.AddressLine2" class="form-control" />
+                        <span asp-validation-for="Sucursal.AddressLine2" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Sucursal.City" class="control-label"></label>
+                        <input asp-for="Sucursal.City" class="form-control" />
+                        <span asp-validation-for="Sucursal.City" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Sucursal.State" class="control-label"></label>
+                        <input asp-for="Sucursal.State" class="form-control" />
+                        <span asp-validation-for="Sucursal.State" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Sucursal.PostalCode" class="control-label"></label>
+                        <input asp-for="Sucursal.PostalCode" class="form-control" />
+                        <span asp-validation-for="Sucursal.PostalCode" class="text-danger"></span>
+                    </div>
+                    <div class="form-group form-check">
+                        <input type="checkbox" asp-for="Sucursal.IsActive" class="form-check-input" />
+                        <label asp-for="Sucursal.IsActive" class="form-check-label"></label>
+                        <span asp-validation-for="Sucursal.IsActive" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Horarios de Atención -->
+            <hr />
+            <h5>Horarios de Atención</h5>
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Lunes -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Lunes</label>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <input type="time" id="Monday.Open" name="Monday.Open" class="form-control" placeholder="Apertura" value="09:00" />
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="time" id="Monday.Close" name="Monday.Close" class="form-control" placeholder="Cierre" value="17:00" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Martes -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Martes</label>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <input type="time" id="Tuesday.Open" name="Tuesday.Open" class="form-control" placeholder="Apertura" value="09:00" />
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="time" id="Tuesday.Close" name="Tuesday.Close" class="form-control" placeholder="Cierre" value="17:00" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Miércoles -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Miércoles</label>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <input type="time" id="Wednesday.Open" name="Wednesday.Open" class="form-control" placeholder="Apertura" value="09:00" />
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="time" id="Wednesday.Close" name="Wednesday.Close" class="form-control" placeholder="Cierre" value="17:00" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Jueves -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Jueves</label>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <input type="time" id="Thursday.Open" name="Thursday.Open" class="form-control" placeholder="Apertura" value="09:00" />
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="time" id="Thursday.Close" name="Thursday.Close" class="form-control" placeholder="Cierre" value="17:00" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Viernes -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Viernes</label>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <input type="time" id="Friday.Open" name="Friday.Open" class="form-control" placeholder="Apertura" value="09:00" />
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="time" id="Friday.Close" name="Friday.Close" class="form-control" placeholder="Cierre" value="17:00" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Sábado -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Sábado</label>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <input type="time" id="Saturday.Open" name="Saturday.Open" class="form-control" placeholder="Apertura" value="09:00" />
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="time" id="Saturday.Close" name="Saturday.Close" class="form-control" placeholder="Cierre" value="13:00" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Domingo -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Domingo</label>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <input type="time" id="Sunday.Open" name="Sunday.Open" class="form-control" placeholder="Apertura" disabled />
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="time" id="Sunday.Close" name="Sunday.Close" class="form-control" placeholder="Cierre" disabled />
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Domingo: Cerrado</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Campos ocultos para valores que se manejan automáticamente -->
+            <input type="hidden" asp-for="Sucursal.Country" />
+            <input type="hidden" asp-for="Sucursal.OpeningHours" />
+            
+            <div class="form-group mt-4">
+                <input type="submit" value="Crear" class="btn btn-primary" />
+                <a asp-page="Index" class="btn btn-secondary">Volver a la lista</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Construir el JSON de horarios antes de enviar
+            var openingHours = {
+                mon: [],
+                tue: [],
+                wed: [],
+                thu: [],
+                fri: [],
+                sat: [],
+                sun: []
+            };
+
+            // Mapeo de días en inglés a sus abreviaciones
+            var dayMapping = {
+                'Monday': 'mon',
+                'Tuesday': 'tue',
+                'Wednesday': 'wed',
+                'Thursday': 'thu',
+                'Friday': 'fri',
+                'Saturday': 'sat',
+                'Sunday': 'sun'
+            };
+
+            // Recoger los horarios de cada día
+            for (var day in dayMapping) {
+                var openField = document.querySelector(`input[name="${day}.Open"]`);
+                var closeField = document.querySelector(`input[name="${day}.Close"]`);
+                
+                // Solo agregar horarios si los campos están habilitados y tienen valores
+                if (!openField.disabled && !closeField.disabled && openField.value && closeField.value) {
+                    openingHours[dayMapping[day]].push({
+                        open: openField.value,
+                        close: closeField.value
+                    });
+                }
+            }
+
+            // Asignar el JSON generado al campo oculto
+            document.querySelector('input[name="Sucursal.OpeningHours"]').value = JSON.stringify(openingHours);
+        });
+    </script>
+}
