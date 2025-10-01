@@ -5,6 +5,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY . .
 RUN dotnet restore "ChikiCut.web/ChikiCut.web.csproj"
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="$PATH:/root/.dotnet/tools"
 RUN dotnet ef database update --project ChikiCut.web/ChikiCut.web.csproj
 RUN dotnet publish "ChikiCut.web/ChikiCut.web.csproj" -c Release -o /app/publish
 
