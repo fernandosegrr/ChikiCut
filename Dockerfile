@@ -5,6 +5,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY . .
 RUN dotnet restore "ChikiCut.web/ChikiCut.web.csproj"
+RUN dotnet ef database update --project ChikiCut.web/ChikiCut.web.csproj
 RUN dotnet publish "ChikiCut.web/ChikiCut.web.csproj" -c Release -o /app/publish
 
 FROM base AS final
