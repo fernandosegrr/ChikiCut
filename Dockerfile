@@ -7,7 +7,6 @@ COPY . .
 RUN dotnet restore "ChikiCut.web/ChikiCut.web.csproj"
 RUN dotnet tool install --global dotnet-ef
 ENV PATH="$PATH:/root/.dotnet/tools"
- ENV ASPNETCORE_ENVIRONMENT=Development
 #RUN dotnet ef database update --project ChikiCut.web/ChikiCut.web.csproj
 RUN dotnet publish "ChikiCut.web/ChikiCut.web.csproj" -c Release -o /app/publish
 
@@ -15,4 +14,5 @@ FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Development
 ENTRYPOINT ["dotnet", "ChikiCut.web.dll"]
